@@ -1,0 +1,11 @@
+[Unit]
+Description=Swamp
+
+[Service]
+ExecStart=/usr/local/bin/swamp --port 8085
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

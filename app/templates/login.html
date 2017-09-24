@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Swamp{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  <h1>Login</h1>
+  <form action="#" method="post" enctype="multipart/form-data">
+    Login:<br>
+    <input type="text" name="username"><br>
+    Last name:<br>
+    <input type="password" name="password"><br>
+    <input type="submit" value="Login">
+</form>
+{% endblock %}
+

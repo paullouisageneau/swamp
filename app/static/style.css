@@ -1,0 +1,124 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+
+}
+
+body {
+	background-color: #FFFFFF;
+	font-family: sans-serif;
+	font-size: 10pt;
+}
+
+img {
+	border: none;
+}
+
+h1 {
+	margin: 1em 0.5em 0.5em 0.25em;
+	font-size: 140%;
+	font-weight: bold;
+}
+
+table {
+	width: auto;
+	border: none;
+}
+
+video {
+	display: block;
+	width: 100%;
+	height: auto;
+	background: black;
+}
+video::-webkit-media-controls {
+	display:none !important;
+}
+
+ul, ol {
+	display: block;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+li {
+	display: block;
+	margin: 0;
+	padding: 0;
+	padding-bottom: 0.25em;
+}
+
+#container {
+	width: 100%;
+	max-width: 60em;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+#list {
+	width: 100%;
+	margin: 0.5em auto 0.5em auto;
+}
+#list tr {
+	height: 2em;
+}
+#list td.icon {
+	width: 2em;
+	text-align: center;
+}
+#list td.name {
+	max-width: 10em;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	text-align: left;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#list td.download {
+	width: 2em;
+	text-align: center;
+}
+#list td div {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#player {
+	width: 100%;
+	height: auto;
+}
+#player .command {
+	margin: 0.25em;
+}
+
+#timer {
+	font-family: monospace;
+}
+
+.progress {
+	border: 1px solid black;
+	border-left: none;
+	border-right: none;
+}
+
+.progressbar {
+	border-right: 1px solid black;
+	background: #505050;
+	background: linear-gradient(#808080, #505050);
+	width: 0;
+	height: 1.25em;
+}
+
+.even	{
+	background: #FFFFFF;
+}
+
+.odd	{
+	background: #E0E0E0;
+}

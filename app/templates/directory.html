@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Swamp{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  <h1>{{ path }}</h1>
+  <form action="#" method="post" enctype="multipart/form-data">
+    <input type="file" name="file">
+     <input type="submit" value="Upload">
+  </form>
+  <table id="list">
+  {% for file in files %}
+    <tr>
+      <td><a href="{{ file.name }}">{{ file.name }}</a></td>
+      <td>{{ if file.stream }}<a href="{{ file.stream }}">stream</a></td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endblock %}
+
