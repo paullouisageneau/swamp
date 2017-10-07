@@ -8,15 +8,14 @@
   <h1>{{ path }}</h1>
   <form action="#" method="post" enctype="multipart/form-data">
     <input type="file" name="file">
-     <input type="submit" value="Upload">
+    <input type="submit" value="Upload">
   </form>
   <table id="list">
-  {% for file in files %}
+  {% for f in files %}
     <tr>
-      <td><a href="{{ file.name }}">{{ file.name }}</a></td>
-      <td>{{ if file.stream }}<a href="{{ file.stream }}">stream</a></td>
+      <td class="icon"><img src="{{ url_for('static', filename='icons/'+('directory' if f.isdir else 'file')+'.png') }}"></td>
+      <td class="name"><a href="{{ f.name }}">{{ f.name }}</a></td>
     </tr>
   {% endfor %}
   </table>
 {% endblock %}
-
