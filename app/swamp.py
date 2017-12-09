@@ -49,10 +49,13 @@ def getDirectoryPath(username, urlpath):
     return os.path.join(userDirectory, urlpath.split('?', 2)[0])
 
 class FileInfo:
-    def __init__(self, path):
+    def __init__(self, path, urlpath):
         self.path = path
         self.name = os.path.basename(path)
         self.isdir = os.path.isdir(path)
+        self.ext = os.path.splitext(path)[1][1:]
+        self.isvideo = self.ext in ['avi', 'mkv', 'mp4']
+        self.urlpath = urlpath
 
 def auth(f):
     @wraps(f)
@@ -70,6 +73,17 @@ def home():
         return flask.redirect(url_for('file'), code=307) # same method
     else:
         return flask.redirect(url_for('login'), code=307) # same method
+
+@app.route("/link/<identifier>", methods=['GET'])
+def link(identifier):
+    r = db.resolveLink(identifier)
+    if not r:
+        flask.abort(404)
+    username, urlpath = r
+    path = getDirectoryPath(username, urlpath)
+    if not os.path.isfile(path):
+        flask.abort(404)
+    return flask.send_file(path)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -115,7 +129,7 @@ def file(urlpath = ""):
         if os.path.isdir(path):
             if path[-1] != '/':
                 return flask.redirect(request.path+"/"+request.query_string, code=302)
-            files = map(lambda f: FileInfo(os.path.join(path, f)), os.listdir(path))
+            files = map(lambda f: FileInfo(os.path.join(path, f), urlpath+f), os.listdir(path))
             return flask.render_template("directory.html", path=urlpath, files=files)
         elif os.path.isfile(path):
             if 'play' in request.args:
@@ -127,6 +141,9 @@ def file(urlpath = ""):
                     downloadLocation=request.path,
                     videoLocation="/stream/"+urlpath,
                     videoTime=seconds)
+            elif 'link' in request.args:
+                identifier = db.createLink(flask.g.username, urlpath)
+                return flask.redirect(url_for('link', identifier=identifier), code=302)
             else:
                 return flask.send_file(path)
         else:
@@ -136,7 +153,6 @@ def file(urlpath = ""):
 @auth
 def stream(urlpath):
     path = getDirectoryPath(flask.g.username, urlpath)
-    print(path)
     s = streamer.Streamer(path)
     if 'playinfo' in request.args:
         return flask.jsonify(s.getDescription())

@@ -48,7 +48,7 @@ class Streamer:
         srt = os.path.splitext(self.filename)[0]+'.srt'
         if os.path.isfile(srt):
             filters+= ['subtitles='+shlex.quote(srt)+':charenc=CP1252']
-        elif 'codec_type=subtitle' in subprocess.check_output(['ffprobe', '-v', 'error', '-show_streams', self.filename]):
+        elif 'codec_type=subtitle' in subprocess.check_output(['ffprobe', '-v', 'error', '-show_streams', self.filename]).decode():
             filters+= ['subtitles='+shlex.quote(self.filename)]
 
         args = ['ffmpeg']

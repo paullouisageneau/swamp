@@ -19,8 +19,9 @@
     If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import logging
 import sqlite3
+import string
+import random
 from passlib.hash import sha512_crypt
 
 class Database:
@@ -36,6 +37,13 @@ class Database:
             "id         INTEGER PRIMARY KEY,"
             "name       TEXT UNIQUE NOT NULL,"
             "password     TEXT NOT NULL)")
+
+        c.execute("CREATE TABLE IF NOT EXISTS link ("
+            "identifier TEXT UNQIUE NOT NULL,"
+            "user_id    INTEGER REFERENCES user(id) ON DELETE CASCADE ON UPDATE RESTRICT,"
+            "path       TEXT NOT NULL)")
+
+        c.execute("CREATE INDEX IF NOT EXISTS link_index ON link(user_id, path)")
 
 #        c.execute("CREATE TABLE IF NOT EXISTS directory ("
 #            "id         INTEGER PRIMARY KEY,"
@@ -63,7 +71,7 @@ class Database:
 
     def authUser(self, name, password):
         c = self._conn.cursor()
-        c.execute("SELECT password FROM user WHERE name =? LIMIT 1", (name,))
+        c.execute("SELECT password FROM user WHERE name = ? LIMIT 1", (name,))
         r = c.fetchone()
         if r is None:
             return False
@@ -73,3 +81,34 @@ class Database:
         c = self._conn.cursor()
         c.execute("DELETE FROM user WHERE name = ?", (name,))
         self._conn.commit()
+
+    def createLink(self, username, path):
+        c = self._conn.cursor()
+        c.execute("SELECT id FROM user WHERE name = ? LIMIT 1", (username,))
+        r = c.fetchone()
+        if r is None:
+            raise Exception("User does not exist")
+        user_id = r[0]
+        c.execute("SELECT identifier FROM link WHERE user_id = ? AND path = ? LIMIT 1", (user_id, path,))
+        r = c.fetchone()
+        if r is not None:
+            return r[0]
+        while True:
+            length = 8
+            letters = string.ascii_lowercase + string.digits
+            identifier = ''.join(random.choice(letters) for i in range(length))
+            c.execute("SELECT 1 FROM link WHERE identifier = ? LIMIT 1", (identifier,))
+            if not c.fetchone():
+                break
+        c.execute("INSERT INTO link (identifier, user_id, path) VALUES (?, ?, ?)", (identifier, user_id, path,))
+        self._conn.commit()
+        return identifier
+
+    def resolveLink(self, identifier):
+        c = self._conn.cursor()
+        c.execute("SELECT user.name, path FROM link LEFT JOIN user ON user.id = user_id WHERE identifier = ? LIMIT 1", (identifier,))
+        r = c.fetchone()
+        if r is None:
+            return None
+        return r[0], r[1]
+

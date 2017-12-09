@@ -19,9 +19,9 @@ img {
 }
 
 h1 {
-	margin: 1em 0.5em 0.5em 0.25em;
 	font-size: 140%;
 	font-weight: bold;
+	margin-bottom: 0.5em;
 }
 
 table {
@@ -53,6 +53,32 @@ li {
 	padding-bottom: 0.25em;
 }
 
+input {
+	display: inline-block;
+	width: 15em;
+	margin: 0.25em;
+}
+
+label {
+	display: inline-block;
+	width: 10em;
+}
+
+.box {
+	margin: 0.5em;
+	padding: 1em;
+	background: #FFFFFF;
+	border: 1px solid black;
+	border-radius: 0.5em;
+}
+
+#login {
+	width: 30em;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
 #container {
 	width: 100%;
 	max-width: 60em;
@@ -60,33 +86,40 @@ li {
 	margin-left: auto;
 }
 
-#list {
+#files img {
+	display: inline-block;
+}
+
+#files table {
 	width: 100%;
-	margin: 0.5em auto 0.5em auto;
 }
-#list tr {
+
+#files tr {
 	height: 2em;
+	white-space: nowrap;
 }
-#list td.icon {
+
+#files td.icon {
 	width: 2em;
 	text-align: center;
 }
-#list td.name {
-	max-width: 10em;
+
+#files td.name {
 	padding-left: 0.5em;
 	padding-right: 0.5em;
 	text-align: left;
-	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-#list td.download {
-	width: 2em;
-	text-align: center;
+
+#files td.actions {
+	padding-left: 0.25em;
+	padding-right: 0.25em;
 }
-#list td div {
-	margin-left: auto;
-	margin-right: auto;
+
+#files td.actions img {
+	margin-left: 0.25em;
+	margin-right: 0.25em;
 }
 
 #player {

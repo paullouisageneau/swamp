@@ -5,13 +5,14 @@
 {% endblock %}
 {% block content %}
   {{ super() }}
-  <h1>Login</h1>
-  <form action="#" method="post" enctype="multipart/form-data">
-    Login:<br>
-    <input type="text" name="username"><br>
-    Last name:<br>
-    <input type="password" name="password"><br>
-    <input type="submit" value="Login">
-</form>
+  <div id="login" class="box">
+    <h1>Login</h1>
+    <form action="#" method="post" enctype="multipart/form-data">
+      <label for="username">User</label>
+      <input type="text" name="username"><br>
+      <label for="password">Password</label>
+      <input type="password" name="password"><br>
+      <input type="submit" value="Login"><br>
+    </form>
+  </div>
 {% endblock %}
-
