@@ -13,7 +13,7 @@
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU Affero General Public License for more details.
-                                                                        
+
     You should have received a copy of the GNU Affero General Public
     License along with Swamp.
     If not, see <http://www.gnu.org/licenses/>.
@@ -26,7 +26,7 @@ import urllib.parse
 import flask
 
 from functools import wraps
-from flask import request, Response, url_for
+from flask import request, url_for
 from werkzeug.utils import secure_filename
 
 from . import database
@@ -138,14 +138,18 @@ def file(urlpath = ""):
                     a = map(lambda s: int(s), request.args['start'].split(':', 3))
                     seconds = reduce(lambda s, n: s*60 + n, a)
                 return flask.render_template("player.html",
-                    downloadLocation=request.path,
+                    downloadLocation=request.path+'?download',
                     videoLocation="/stream/"+urlpath,
                     videoTime=seconds)
             elif 'link' in request.args:
                 identifier = db.createLink(flask.g.username, urlpath)
                 return flask.redirect(url_for('link', identifier=identifier), code=302)
             else:
-                return flask.send_file(path)
+                response = flask.make_response(flask.send_file(path));
+                if 'download' in request.args:
+                    response.headers['Content-Type'] = 'application/octet-stream'
+                    response.headers['Content-Disposition'] = 'attachment; filename="'+os.path.basename(path)+'"';
+                return response
         else:
             flask.abort(404)
 
@@ -159,4 +163,4 @@ def stream(urlpath):
     if 'castinfo' in request.args:
         flask.abort(404)
     f = s.getWebmStream(False, request.args['start'] if 'start' in request.args else '')
-    return Response(f, direct_passthrough=True, mimetype='video/webm')
+    return flask.make_response(f, direct_passthrough=True, mimetype='video/webm')
