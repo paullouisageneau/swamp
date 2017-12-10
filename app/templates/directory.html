@@ -6,12 +6,14 @@
 {% block content %}
   {{ super() }}
   <h1>{{ path }}</h1>
+  {% if writable %}
   <div id="tools" class="box">
     <form action="#" method="post" enctype="multipart/form-data">
       <input type="file" name="file">
       <input type="submit" value="Upload">
     </form>
   </div>
+  {% endif %}
   <div id="files" class="box">
     <table>
     {% for file in files %}
