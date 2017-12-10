@@ -8,8 +8,8 @@
   <h1>Player</h1>
   <div id="player">
   <video id="video"></video>
-  <div class="progress"><div class="progressbar"></div></div>
-  <div class="command"><span id="timer"></span> - <a href="#" onclick="requestFullscreen();return false;">Fullscreen</a> - <a href="{{ downloadLocation }}">Download</a><span id="castlinks"></span></div>
+  <div id="progress"><div id="progressbar"></div></div>
+  <div id="command"><span id="playinfo"><img id="playbutton" src="{{ url_for('static', filename='icons/play.png') }}">&nbsp;<span id="timer"></span> - <a href="{{ downloadLocation }}">Download</a><span id="castlinks"></span></div>
   </div>
   <script src="{{ url_for('static', filename='player.js') }}"></script>
   <script>

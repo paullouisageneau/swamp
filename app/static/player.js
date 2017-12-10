@@ -21,8 +21,9 @@ var video = document.getElementById('video');
 var videoSource = document.createElement('source');
 var player = document.getElementById('player');
 var castlinks = document.getElementById('castlinks');
-var progress = document.getElementsByClassName('progress')[0];
-var progressbar = document.getElementsByClassName('progressbar')[0];
+var progress = document.getElementById('progress');
+var progressbar = document.getElementById('progressbar');
+var playbutton = document.getElementById('playbutton');
 var videoUrl = "";
 var videoTime = 0;
 var videoBaseTime = 0;
@@ -40,9 +41,18 @@ video.ontimeupdate = function() {
 }
 
 video.onplay = function() {
+	playbutton.src = playbutton.src.substr(0, playbutton.src.lastIndexOf('/') + 1) + 'pause.png';
+}
+
+video.onpause = function() {
+	playbutton.src = playbutton.src.substr(0, playbutton.src.lastIndexOf('/') + 1) + 'play.png';
 }
 
 video.onclick = function() {
+	toggleFullscreen();
+}
+
+playbutton.onclick = function() {
 	if(video.paused) video.play();
 	else video.pause();
 }
@@ -55,6 +65,10 @@ progress.onmousedown = function(evt) {
 document.onkeydown = function(evt) {
 	evt = evt || window.event;
 	switch(evt.which || evt.keyCode) {
+	case 32: // space
+		if(video.paused) video.play();
+		else video.pause();
+		break;
 	case 37: // left
 		loadVideo(videoUrl, videoTime-30);
 		break;
@@ -119,15 +133,29 @@ function scalePlayer() {
 	else if(vh > 0) video.style.height = vh+'px';
 }
 
-function requestFullscreen() {
-	if (video.requestFullscreen) {
-		video.requestFullscreen();
-	}
-	else if(video.mozRequestFullScreen) {
-		video.mozRequestFullScreen();
-	}
-	else if(video.webkitRequestFullScreen) {
-		video.webkitRequestFullScreen();
+function toggleFullscreen() {
+	var element = video;
+	if (!document.fullscreenElement &&
+      !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {  
+		if (element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if (element.msRequestFullscreen) {
+			element.msRequestFullscreen();
+		} else if (element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} else if (element.webkitRequestFullscreen) {
+			element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+		}
+	} else {
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		} else if (document.msExitFullscreen) {
+			document.msExitFullscreen();
+		} else if (document.mozCancelFullScreen) {
+			document.mozCancelFullScreen();
+		} else if (document.webkitExitFullscreen) {
+			document.webkitExitFullscreen();
+		}
 	}
 }
 

@@ -135,13 +135,23 @@ label {
 	font-family: monospace;
 }
 
-.progress {
+#player #command {
+	padding: 0.25em;
+}
+
+#player #command img {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+
+#player #progress {
 	border: 1px solid black;
 	border-left: none;
 	border-right: none;
 }
 
-.progressbar {
+#player #progressbar {
 	border-right: 1px solid black;
 	background: #505050;
 	background: linear-gradient(#808080, #505050);
