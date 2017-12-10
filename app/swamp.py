@@ -150,6 +150,7 @@ def file(urlpath = ""):
 					a = map(lambda s: int(s), request.args['start'].split(':', 3))
 					seconds = reduce(lambda s, n: s*60 + n, a)
 				return flask.render_template("player.html",
+					title=os.path.basename(path),
 					downloadLocation=request.path+'?download',
 					videoLocation="/stream/"+urlpath,
 					videoTime=seconds)
