@@ -37,7 +37,7 @@
       <tr class="{{ loop.cycle('odd', 'even') }}">
         <td class="icon"><img src="{{ url_for('static', filename=('icons/directory.png' if file.isdir else 'icons/file.png')) }}"></td>
         <td class="name"><a href="{{ file.name + ('?play' if file.isvideo else '') }}">{{ file.name }}</a></td>
-        <td class="actions"><a href="{{ file.name + '?download' }}"><img src="{{ url_for('static', filename='icons/download.png') }}"></a><a href="{{ file.name + '?link' }}"><img src="{{ url_for('static', filename='icons/link.png') }}"></a><a href="#" onclick="deleteFile('{{file.name}}')"><img src="{{ url_for('static', filename='icons/delete.png') }}"></a></td>
+        <td class="actions"><a href="{{ file.name + '?download' }}"><img src="{{ url_for('static', filename='icons/download.png') }}"></a><a href="{{ file.name + '?link' }}"><img src="{{ url_for('static', filename='icons/link.png') }}"></a>{% if file.writable %}<a href="#" onclick="deleteFile('{{file.name}}')"><img src="{{ url_for('static', filename='icons/delete.png') }}"></a>{% endif %}</td>
       </tr>
     {% endfor %}
     </table>

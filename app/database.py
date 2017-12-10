@@ -140,7 +140,7 @@ class Database:
 		d = {}
 		for r in rows:
 			if r[2] > 0:
-				d[r[1]] = r[0]
+				d[r[1]] = (r[0], r[2])
 		return d
 
 	def resolveDirectory(self, username, path):
@@ -150,7 +150,7 @@ class Database:
 		if r is None:
 			raise Exception("User does not exist")
 		user_id = r[0]
-		s = path.split('/')
+		s = path.rstrip('/').split('/')
 		if len(s) == 0:
 			return None
 		directory = s[0]
@@ -161,7 +161,6 @@ class Database:
 		s[0] = r[0]
 		resolvedPath = os.path.join(*s)
 		level = r[1]
-		print(resolvedPath)
 		return resolvedPath, level
 
 	def createLink(self, username, path):

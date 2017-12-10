@@ -47,21 +47,23 @@ def getDirectoryPath(username, urlpath):
 	r = db.resolveDirectory(username, urlpath)
 	if r:
 		path, level = r
-		if level > 0:
+		if level >= 1:
 			return path, (level >= 2)
 	userDirectory = os.path.join(filesDirectory, username)
 	if not os.path.isdir(userDirectory):
 		os.makedirs(userDirectory)
-	return os.path.join(userDirectory, urlpath), True
+	s = [userDirectory] + urlpath.rstrip('/').split('/')
+	return os.path.join(*s), True
 
 class FileInfo:
-	def __init__(self, path, urlpath):
+	def __init__(self, path, urlpath, writable = False):
 		self.path = path
 		self.name = os.path.basename(path)
 		self.isdir = os.path.isdir(path)
 		self.ext = os.path.splitext(path)[1][1:]
 		self.isvideo = self.ext in ['avi', 'mkv', 'mp4']
 		self.urlpath = urlpath
+		self.writable = writable
 
 def auth(f):
 	@wraps(f)
@@ -114,38 +116,47 @@ def file(urlpath = ""):
 	if request.method == 'POST':
 		if not writable:
 			flask.abort(403)
+		if not os.path.isdir(path):
+			if not os.path.isfile(path):
+				flask.abort(404)
+			else:
+				flask.abort(400)
+		if len(urlpath) > 0 and urlpath[-1] != '/':
+			urlpath+= '/'
 		data = request.form
 		files = request.files
 		if 'file' in files and files['file'].filename != '':
-			if not os.path.isdir(path):
-				if not os.path.isfile(path):
-					flask.abort(404)
-				else:
-					flask.abort(400)
 			f = request.files['file']
 			filename = secure_filename(f.filename)
 			f.save(os.path.join(path, filename))
 		elif 'operation' in data and 'argument' in data:
 			operation = data['operation']
 			argument = data['argument']
-			path = os.path.join(path, argument)
+			suburlpath = urlpath+argument
+			subpath, subwritable = getDirectoryPath(flask.g.username, suburlpath)
+			if not subwritable:
+				flask.abort(403)
 			if operation == 'delete':
-				if os.path.isdir(path):
-					os.rmdir(path)
+				if os.path.isdir(subpath):
+					os.rmdir(subpath)
 				else:
-					os.remove(path)
+					os.remove(subpath)
 		else:
 			flask.abort(400);
 		return flask.redirect(request.path, code=302)
 	else: # GET
 		if os.path.isdir(path):
-			if path[-1] != '/':
+			if len(urlpath) > 0 and urlpath[-1] != '/':
 				return flask.redirect(request.path+"/"+request.query_string.decode(), code=302)
-			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f), os.listdir(path)))
+			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, writable), os.listdir(path)))
 			if len(urlpath) == 0:
 				d = db.getDirectoriesForUser(flask.g.username)
-				files = [FileInfo(d[n], n) for n in d] + files
-			
+				directories = []
+				for name in d:
+					path, level = d[name]
+					if level >= 1:
+						directories.append(FileInfo(path, name, level >= 2))
+				files = directories + files
 			return flask.render_template("directory.html", path=urlpath, files=files, writable=writable)
 		elif os.path.isfile(path):
 			if 'play' in request.args:
