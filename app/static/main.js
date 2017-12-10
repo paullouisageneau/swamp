@@ -17,20 +17,3 @@
 // License along with Swamp.
 // If not, see <http://www.gnu.org/licenses/>
 
-window.onload = function() {
-	var list = document.getElementById('list');
-	if(list) {
-		var elements = list.getElementsByTagName('td');
-		for(i in elements) {
-			var a = elements[i].getElementsByTagName('a');
-			if(a.length) {
-				(function(href) {
-					elements[i].onclick = function() {
-						document.location.href = href;
-					}
-				})(a[0].href);
-				elements[i].style.cursor = 'pointer';
-			}
-		}
-	}
-};

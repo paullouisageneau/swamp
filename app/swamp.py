@@ -174,7 +174,7 @@ def file(urlpath = ""):
 				identifier = db.createLink(flask.g.username, urlpath)
 				return flask.redirect(url_for('link', identifier=identifier), code=302)
 			else:
-				response = flask.Response(flask.send_file(path));
+				response = flask.make_response(flask.send_file(path));
 				if 'download' in request.args:
 					response.headers['Content-Type'] = 'application/octet-stream'
 					response.headers['Content-Disposition'] = 'attachment; filename="'+os.path.basename(path)+'"';

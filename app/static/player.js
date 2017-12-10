@@ -123,7 +123,6 @@ function updateTimer() {
 	percent = (videoDuration >= 0 ? 100*videoTime/videoDuration : 0);
 	progressbar.style.width = percent + "%";
 	document.getElementById("timer").innerHTML = formatTime(videoTime);
-
 }
 
 function scalePlayer() {

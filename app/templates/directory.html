@@ -10,13 +10,24 @@
   <div id="tools" class="box">
     <form id="uploadform" action="#" method="post" enctype="multipart/form-data">
       <input type="file" name="file">
-      <input type="submit" value="Upload">
+      <input id="uploadformbutton" type="submit" value="Upload">
     </form>
     <form id="operationform" action="#" method="post" enctype="multipart/form-data">
       <input type="hidden" name="operation" value="">
       <input type="hidden" name="argument" value="">
     </form>
     <script>
+      var form = document.getElementById("uploadform");
+      var fileChooser = form.elements['file'];
+      fileChooser.style.display = 'none';
+      fileChooser.onchange = function() {
+        form.submit();
+      };
+      var button = document.getElementById("uploadformbutton");
+      button.type = 'button';
+      button.onclick = function() {
+        fileChooser.click();
+      }
       function postOperation(operation, argument) {
         var form = document.getElementById("operationform");
         form.elements['operation'].value = operation;
@@ -37,7 +48,7 @@
       <tr class="{{ loop.cycle('odd', 'even') }}">
         <td class="icon"><img src="{{ url_for('static', filename=('icons/directory.png' if file.isdir else 'icons/file.png')) }}"></td>
         <td class="name"><a href="{{ file.name + ('?play' if file.isvideo else '') }}">{{ file.name }}</a></td>
-        <td class="actions"><a href="{{ file.name + '?download' }}"><img src="{{ url_for('static', filename='icons/download.png') }}"></a><a href="{{ file.name + '?link' }}"><img src="{{ url_for('static', filename='icons/link.png') }}"></a>{% if file.writable %}<a href="#" onclick="deleteFile('{{file.name}}')"><img src="{{ url_for('static', filename='icons/delete.png') }}"></a>{% endif %}</td>
+        <td class="actions"><a href="{{ file.name + '?download' }}"><img src="{{ url_for('static', filename='icons/download.png') }}"></a><a href="{{ file.name + '?link' }}"><img src="{{ url_for('static', filename='icons/link.png') }}"></a>{% if file.writable %}<a href="#" onclick="deleteFile('{{file.name}}'); return false;"><img src="{{ url_for('static', filename='icons/delete.png') }}"></a>{% endif %}</td>
       </tr>
     {% endfor %}
     </table>
