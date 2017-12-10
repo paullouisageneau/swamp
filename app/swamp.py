@@ -137,7 +137,11 @@ def file(urlpath = ""):
 		if os.path.isdir(path):
 			if path[-1] != '/':
 				return flask.redirect(request.path+"/"+request.query_string.decode(), code=302)
-			files = map(lambda f: FileInfo(os.path.join(path, f), urlpath+f), os.listdir(path))
+			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f), os.listdir(path)))
+			if len(urlpath) == 0:
+				d = db.getDirectoriesForUser(flask.g.username)
+				files = [FileInfo(d[n], n) for n in d] + files
+			
 			return flask.render_template("directory.html", path=urlpath, files=files, writable=writable)
 		elif os.path.isfile(path):
 			if 'play' in request.args:

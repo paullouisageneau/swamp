@@ -128,9 +128,22 @@ class Database:
 	def delDirectoryForUser(self, path, username):
 		self.setDirectoryAccess(path, username, 0)
 
+	def getDirectoriesForUser(self, username):
+		c = self._conn.cursor()
+		c.execute("SELECT id FROM user WHERE name = ? LIMIT 1", (username,))
+		r = c.fetchone()
+		if r is None:
+			raise Exception("User does not exist")
+		user_id = r[0]
+		c.execute("SELECT d.path, d.name, a.level FROM directory AS d LEFT JOIN access AS a ON a.directory_id = d.id AND a.user_id = ? LIMIT 1", (user_id,))
+		rows = c.fetchall()
+		d = {}
+		for r in rows:
+			if r[2] > 0:
+				d[r[1]] = r[0]
+		return d
+
 	def resolveDirectory(self, username, path):
-		if len(path) == 0:
-			path = '.'
 		c = self._conn.cursor()
 		c.execute("SELECT id FROM user WHERE name = ? LIMIT 1", (username,))
 		r = c.fetchone()
