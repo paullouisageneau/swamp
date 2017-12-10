@@ -116,20 +116,24 @@ def file(urlpath = ""):
 			flask.abort(403)
 		data = request.form
 		files = request.files
-		if not os.path.isdir(path):
-			if not os.path.isfile(path):
-				flask.abort(404)
-			else:
-				flask.abort(400)
 		if 'file' in files and files['file'].filename != '':
+			if not os.path.isdir(path):
+				if not os.path.isfile(path):
+					flask.abort(404)
+				else:
+					flask.abort(400)
 			f = request.files['file']
 			filename = secure_filename(f.filename)
 			f.save(os.path.join(path, filename))
-		elif 'action' in data:
-			action = data['action']
-			name = data.get('name', '')
-			if action == 'delete':
-				pass
+		elif 'operation' in data and 'argument' in data:
+			operation = data['operation']
+			argument = data['argument']
+			path = os.path.join(path, argument)
+			if operation == 'delete':
+				if os.path.isdir(path):
+					os.rmdir(path)
+				else:
+					os.remove(path)
 		else:
 			flask.abort(400);
 		return flask.redirect(request.path, code=302)

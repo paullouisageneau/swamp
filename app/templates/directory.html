@@ -8,10 +8,27 @@
   <h1>{{ path }}</h1>
   {% if writable %}
   <div id="tools" class="box">
-    <form action="#" method="post" enctype="multipart/form-data">
+    <form id="uploadform" action="#" method="post" enctype="multipart/form-data">
       <input type="file" name="file">
       <input type="submit" value="Upload">
     </form>
+    <form id="operationform" action="#" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="operation" value="">
+      <input type="hidden" name="argument" value="">
+    </form>
+    <script>
+      function postOperation(operation, argument) {
+        var form = document.getElementById("operationform");
+        form.elements['operation'].value = operation;
+        form.elements['argument'].value = argument;
+        form.submit();
+      }
+      function deleteFile(filename) {
+        if(confirm("Delete '"+filename+"' ?")) {
+          postOperation('delete', filename);
+        }
+      }
+    </script>
   </div>
   {% endif %}
   <div id="files" class="box">
@@ -20,7 +37,7 @@
       <tr class="{{ loop.cycle('odd', 'even') }}">
         <td class="icon"><img src="{{ url_for('static', filename=('icons/directory.png' if file.isdir else 'icons/file.png')) }}"></td>
         <td class="name"><a href="{{ file.name + ('?play' if file.isvideo else '') }}">{{ file.name }}</a></td>
-        <td class="actions"><a href="{{ file.name + '?download' }}"><img src="{{ url_for('static', filename='icons/download.png') }}"></a><a href="{{ file.name + '?link' }}"><img src="{{ url_for('static', filename='icons/link.png') }}"></a></td>
+        <td class="actions"><a href="{{ file.name + '?download' }}"><img src="{{ url_for('static', filename='icons/download.png') }}"></a><a href="{{ file.name + '?link' }}"><img src="{{ url_for('static', filename='icons/link.png') }}"></a><a href="#" onclick="deleteFile('{{file.name}}')"><img src="{{ url_for('static', filename='icons/delete.png') }}"></a></td>
       </tr>
     {% endfor %}
     </table>
