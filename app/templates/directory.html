@@ -10,24 +10,40 @@
   <div id="tools" class="box">
     <form id="uploadform" action="#" method="post" enctype="multipart/form-data">
       <input type="file" name="file">
-      <input id="uploadformbutton" type="submit" value="Upload">
+      <input id="uploadbutton" type="submit" value="Upload">
+    </form>
+    <form id="createform" action="#" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="operation" value="create">
+      <input type="text" name="argument" value="">
+      <input id="createbutton" type="submit" value="Create">
     </form>
     <form id="operationform" action="#" method="post" enctype="multipart/form-data">
       <input type="hidden" name="operation" value="">
       <input type="hidden" name="argument" value="">
     </form>
     <script>
-      var form = document.getElementById("uploadform");
-      var fileChooser = form.elements['file'];
+      var uploadForm = document.getElementById("uploadform");
+      var uploadButton = document.getElementById("uploadbutton");
+      var fileChooser = uploadForm.elements['file'];
       fileChooser.style.display = 'none';
       fileChooser.onchange = function() {
-        form.submit();
+        uploadForm.submit();
       };
-      var button = document.getElementById("uploadformbutton");
-      button.type = 'button';
-      button.onclick = function() {
+      uploadButton.type = 'button';
+      uploadButton.onclick = function() {
         fileChooser.click();
-      }
+      };
+      var createForm = document.getElementById("createform");
+      var createButton = document.getElementById('createbutton');
+      createForm.elements['argument'].style.display = 'none';
+      createButton.type = 'button';
+      createButton.onclick = function() {
+        var name = prompt("New directory name:", "");
+	if(name) {
+	  createForm.elements['argument'].value = name;
+	  createForm.submit();
+	}
+      };
       function postOperation(operation, argument) {
         var form = document.getElementById("operationform");
         form.elements['operation'].value = operation;

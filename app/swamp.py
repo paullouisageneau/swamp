@@ -141,6 +141,10 @@ def file(urlpath = ""):
 					os.rmdir(subpath)
 				else:
 					os.remove(subpath)
+			elif operation == 'create':
+				os.makedirs(subpath)
+			else:
+				flask.abort(400)
 		else:
 			flask.abort(400);
 		return flask.redirect(request.path, code=302)
