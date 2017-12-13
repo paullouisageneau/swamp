@@ -26,6 +26,7 @@ var progressbar = document.getElementById('progressbar');
 var playbutton = document.getElementById('playbutton');
 var videoUrl = "";
 var videoTime = 0;
+var videoHeight = -1;
 var videoBaseTime = 0;
 var videoDuration = -1;
 var audioStream = 0;
@@ -41,6 +42,7 @@ video.ontimeupdate = function() {
 }
 
 video.onplay = function() {
+	scalePlayer();
 	playbutton.src = playbutton.src.substr(0, playbutton.src.lastIndexOf('/') + 1) + 'pause.png';
 }
 
@@ -126,10 +128,10 @@ function updateTimer() {
 }
 
 function scalePlayer() {
+	if(videoHeight < 0) videoHeight = video.clientHeight;
 	var h = window.innerHeight-64;
-	var vh = video.clientHeight
-	if(vh > h) video.style.height = h+'px';
-	else if(vh > 0) video.style.height = vh+'px';
+	if(videoHeight > h) video.style.height = h+'px';
+	else if(videoHeight > 0) video.style.height = videoHeight+'px';
 }
 
 function toggleFullscreen() {

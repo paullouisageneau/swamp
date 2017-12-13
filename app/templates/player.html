@@ -5,7 +5,6 @@
 {% endblock %}
 {% block content %}
   {{ super() }}
-  <h1>{{ title }}</h1>
   <div id="player">
   <video id="video"></video>
   <div id="progress"><div id="progressbar"></div></div>
@@ -14,10 +13,9 @@
   <script src="{{ url_for('static', filename='player.js') }}"></script>
   <script>
   window.onload = function() {
-  	scalePlayer();
     loadVideo("{{ videoLocation }}", {{ videoTime }});
     {% if isLocal %}
-  	requestCastLinks();
+    requestCastLinks();
     {% endif %}
   }
   </script>
