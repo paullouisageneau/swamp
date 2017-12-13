@@ -90,6 +90,10 @@ label {
 	margin-left: auto;
 }
 
+#tools input {
+	width: 8em;
+}
+
 #files img {
 	display: inline-block;
 }
