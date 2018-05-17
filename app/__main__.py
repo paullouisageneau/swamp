@@ -26,7 +26,7 @@ import getpass
 
 import gevent.wsgi
 
-from . import swamp
+from . import app
 from . import database
 
 port = 8085
@@ -48,12 +48,12 @@ def command(a):
 				password = a.pop()
 			else:
 				password = getpass.getpass()
-			swamp.db.addUser(username, password)
+			db.addUser(username, password)
 		elif opr == 'del':
 			if not len(a):
 				print("Missing user name")
 				return 2
-			swamp.db.delUser(username)
+			db.delUser(username)
 		else:
 			print("Unknown operation, expected 'add' or 'del'")
 	elif obj == 'dir' or obj == 'directory':
@@ -71,15 +71,15 @@ def command(a):
 				access = 2
 				if len(a):
 					access = a.pop()
-				swamp.db.addDirectoryForUser(path, username, access)
+				db.addDirectoryForUser(path, username, access)
 			else:
-				swamp.db.addDirectory(path)
+				db.addDirectory(path)
 		elif opr == 'del':
 			if not len(a):
 				print("Missing path")
 				return 2
 			path = a.pop()
-			swamp.db.delDirectory(path)
+			db.delDirectory(path)
 		else:
 			print("Unknown operation, expected 'add' or 'del'")
 	else:
@@ -94,7 +94,8 @@ def main():
 		return command(a)
 	else:
 		try:
-			http_server = gevent.wsgi.WSGIServer(("", port), swamp.app)
+			print("Listening on http://127.0.0.1:{}/".format(port))
+			http_server = gevent.wsgi.WSGIServer(("", port), app)
 			http_server.serve_forever()
 		except KeyboardInterrupt:
 			return 0
