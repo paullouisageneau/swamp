@@ -5,8 +5,10 @@
 {% endblock %}
 {% block content %}
   {{ super() }}
+  <div id="logo">
+    <img src="{{ url_for('static', filename='swamp.png') }}" alt="Swamp">
+  </div>
   <div id="login" class="box">
-    <h1>Login</h1>
     <form action="#" method="post" enctype="multipart/form-data">
       <label for="username">User</label>
       <input type="text" name="username"><br>

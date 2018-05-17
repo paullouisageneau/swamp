@@ -76,6 +76,11 @@ label {
 	border-radius: 0.5em;
 }
 
+#logo img {
+	display: block;
+	margin: 1em auto 1em auto;
+}
+
 #login {
 	width: 30em;
 	margin-left: auto;
