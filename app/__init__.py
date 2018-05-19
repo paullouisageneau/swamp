@@ -42,6 +42,9 @@ databaseFile = os.path.join(app.root_path, 'database.db')
 db = database.Database(databaseFile)
 db.init()
 
+def url_for(*args, **kwargs):
+        return app.config['BASE_URL'] + flask.url_for(*args, **kwargs)
+
 def getDirectoryPath(username, urlpath):
 	urlpath = urlpath.split('?', 2)[0]
 	r = db.resolveDirectory(username, urlpath)

@@ -35,6 +35,7 @@ video {
 	height: auto;
 	background: black;
 }
+
 video::-webkit-media-controls {
 	display:none !important;
 }
