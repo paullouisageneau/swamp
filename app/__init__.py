@@ -179,8 +179,8 @@ def file(urlpath = ""):
 				return flask.render_template("player.html",
 					title = os.path.basename(path),
 					downloadLocation = app.config['BASE_PATH']+request.path+'?download',
-					videoLocation="/stream/"+urlpath,
-					videoTime=seconds)
+					videoLocation = url_for("stream", urlpath=urlpath),
+					videoTime = seconds)
 			elif 'link' in request.args:
 				identifier = db.createLink(flask.g.username, urlpath)
 				return flask.redirect(url_for('link', identifier=identifier), code=302)
