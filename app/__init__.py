@@ -45,6 +45,10 @@ db.init()
 def url_for(*args, **kwargs):
         return app.config['BASE_URL'] + flask.url_for(*args, **kwargs)
 
+@app.context_processor
+def inject():
+        return dict(url_for=url_for)
+
 def getDirectoryPath(username, urlpath):
 	urlpath = urlpath.split('?', 2)[0]
 	r = db.resolveDirectory(username, urlpath)
