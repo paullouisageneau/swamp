@@ -26,7 +26,7 @@ import getpass
 
 import gevent.wsgi
 
-from . import app
+from . import app, db
 from . import database
 
 port = 8085
