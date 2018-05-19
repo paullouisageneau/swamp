@@ -2,5 +2,5 @@
 # Debugging flag
 DEBUG = True
 
-# Base app URL
-BASE_URL = ""
+# Base app URL path
+BASE_PATH = ""

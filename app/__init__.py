@@ -43,7 +43,7 @@ db = database.Database(databaseFile)
 db.init()
 
 def url_for(*args, **kwargs):
-        return app.config['BASE_URL'] + flask.url_for(*args, **kwargs)
+        return app.config['BASE_PATH'] + flask.url_for(*args, **kwargs)
 
 @app.context_processor
 def inject():
@@ -154,11 +154,11 @@ def file(urlpath = ""):
 				flask.abort(400)
 		else:
 			flask.abort(400);
-		return flask.redirect(request.path, code=302)
+		return flask.redirect(app.config['BASE_PATH']+request.path, code=302)
 	else: # GET
 		if os.path.isdir(path):
 			if len(urlpath) > 0 and urlpath[-1] != '/':
-				return flask.redirect(request.path+"/"+request.query_string.decode(), code=302)
+				return flask.redirect(app.config['BASE_PATH']+request.path+"/"+request.query_string.decode(), code=302)
 			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, writable), os.listdir(path)))
 			if len(urlpath) == 0:
 				d = db.getDirectoriesForUser(flask.g.username)
@@ -177,8 +177,8 @@ def file(urlpath = ""):
 					a = map(lambda s: int(s), request.args['start'].split(':', 3))
 					seconds = reduce(lambda s, n: s*60 + n, a)
 				return flask.render_template("player.html",
-					title=os.path.basename(path),
-					downloadLocation=request.path+'?download',
+					title = os.path.basename(path),
+					downloadLocation = app.config['BASE_PATH']+request.path+'?download',
 					videoLocation="/stream/"+urlpath,
 					videoTime=seconds)
 			elif 'link' in request.args:
