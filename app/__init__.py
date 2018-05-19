@@ -79,7 +79,7 @@ def auth(f):
 			flask.g.username = flask.session['username']
 			return f(*args, **kwargs)
 		else:
-			return flask.redirect(url_for('login', url=request.full_path), code=302)
+			return flask.redirect(url_for('login', url=app.config['BASE_PATH']+request.full_path), code=302)
 	return decorated
 
 @app.route("/", methods=['GET'])
