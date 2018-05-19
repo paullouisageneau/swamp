@@ -98,7 +98,10 @@ def link(identifier):
 	path, writable = getDirectoryPath(username, urlpath)
 	if not os.path.isfile(path):
 		flask.abort(404)
-	return flask.send_file(path)
+	if 'display' in request.args:
+		link = request.base_url
+		return flask.render_template("link.html", link=link, filename=os.path.basename(path))
+	return flask.send_file(path, as_attachment=True)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -183,7 +186,7 @@ def file(urlpath = ""):
 					videoTime = seconds)
 			elif 'link' in request.args:
 				identifier = db.createLink(flask.g.username, urlpath)
-				return flask.redirect(url_for('link', identifier=identifier), code=302)
+				return flask.redirect(url_for('link', identifier=identifier)+'?display', code=302)
 			else:
 				response = flask.make_response(flask.send_file(path));
 				if 'download' in request.args:

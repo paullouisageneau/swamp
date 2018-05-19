@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  <div id="link" class="box">
+    <p>Link to <span class="filename">{{ filename }}</span>&nbsp;:</p>
+    <p><a href="{{ link }}">{{ link }}</a></p>
+  </div>
+{% endblock %}

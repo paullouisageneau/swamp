@@ -137,6 +137,17 @@ label {
 	margin-right: 0.25em;
 }
 
+#link {
+	margin: 1em;
+	font-size: 125%;
+	text-align: center;
+	line-height: 1.5em;
+}
+
+#link a {
+
+}
+
 #player {
 	width: 100%;
 	height: auto;
