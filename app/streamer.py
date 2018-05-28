@@ -25,7 +25,7 @@ class Streamer:
 			filters+= ['scale=-1:min(ih*1920/iw\,1080)']
 			filters+= ['pad=1920:1080:(1920-iw)/2:(1080-ih)/2:black']
 
-		if re.match('^[a-zA-Z0-9 _\\-\\+\\.\\\\/]+$', self.filename):
+		if re.match('^[^\"\'\\[\\]]+$', self.filename):
 			srt = os.path.splitext(self.filename)[0]+'.srt'
 			if os.path.isfile(srt):
 				filters+= ['subtitles='+srt+':charenc=CP1252']
