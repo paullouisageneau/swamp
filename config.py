@@ -3,4 +3,8 @@
 DEBUG = True
 
 # Base app URL path
-BASE_PATH = ""
+BASE_PATH = "/swamp"
+
+# Preferred URL scheme
+PREFERRED_URL_SCHEME = 'https'
+

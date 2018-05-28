@@ -3,7 +3,7 @@ import sys
 import subprocess
 import os.path
 import json
-import shlex
+import re
 
 directory = '/home/public'
 
@@ -25,11 +25,12 @@ class Streamer:
 			filters+= ['scale=-1:min(ih*1920/iw\,1080)']
 			filters+= ['pad=1920:1080:(1920-iw)/2:(1080-ih)/2:black']
 
-		srt = os.path.splitext(self.filename)[0]+'.srt'
-		if os.path.isfile(srt):
-			filters+= ['subtitles='+shlex.quote(srt)+':charenc=CP1252']
-		elif 'codec_type=subtitle' in subprocess.check_output(['ffprobe', '-v', 'error', '-show_streams', self.filename]).decode():
-			filters+= ['subtitles='+shlex.quote(self.filename)]
+		if re.match('^[a-zA-Z0-9 _\\-\\+\\.\\\\/]+$', self.filename):
+			srt = os.path.splitext(self.filename)[0]+'.srt'
+			if os.path.isfile(srt):
+				filters+= ['subtitles='+srt+':charenc=CP1252']
+			elif 'codec_type=subtitle' in subprocess.check_output(['ffprobe', '-v', 'error', '-show_streams', self.filename]).decode():
+				filters+= ['subtitles='+self.filename]
 
 		args = ['ffmpeg']
 		if start:

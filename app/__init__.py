@@ -24,6 +24,7 @@ import sys
 import os
 import urllib.parse
 import flask
+import urllib
 
 from functools import wraps
 from flask import request, url_for
@@ -45,9 +46,12 @@ db.init()
 def url_for(*args, **kwargs):
         return app.config['BASE_PATH'] + flask.url_for(*args, **kwargs)
 
+def url_quote(path):
+        return urllib.parse.quote(path)
+
 @app.context_processor
 def inject():
-        return dict(url_for=url_for)
+        return dict(url_for=url_for, url_quote=url_quote)
 
 def getDirectoryPath(username, urlpath):
 	urlpath = urlpath.split('?', 2)[0]
@@ -99,7 +103,7 @@ def link(identifier):
 	if not os.path.isfile(path):
 		flask.abort(404)
 	if 'display' in request.args:
-		link = request.base_url
+		link = app.config['PREFERRED_URL_SCHEME'] + '://' + request.host + url_for("link", identifier=identifier)
 		return flask.render_template("link.html", link=link, filename=os.path.basename(path))
 	return flask.send_file(path, as_attachment=True)
 
@@ -207,3 +211,4 @@ def stream(urlpath):
 		flask.abort(404)
 	f = s.getWebmStream(False, request.args['start'] if 'start' in request.args else '')
 	return flask.Response(f, direct_passthrough=True, mimetype='video/webm')
+
