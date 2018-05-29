@@ -61,31 +61,37 @@ form {
 input {
 	display: inline-block;
 	width: 15em;
-	margin: 0.25em;
+	height: 2.5em;
+	margin: 0.5em 0.25em;
 }
 
 label {
 	display: inline-block;
 	width: 10em;
+	margin: 0.5em 0.25em;
 }
 
 .box {
-	margin: 0.5em;
+	margin: 0.25em;
 	padding: 0.25em;
 	background: #FFFFFF;
-	border: 1px solid black;
-	border-radius: 0.5em;
+	border: 1px solid #F0F0F0;
+	border-radius: 3px;
 }
 
 #logo img {
 	display: block;
 	margin: 1em auto 1em auto;
+	max-width: 100%;
 }
 
 #login {
 	width: 30em;
+	max-width: 100%;
 	margin-left: auto;
 	margin-right: auto;
+	padding-top: 1.5em;
+	padding-bottom: 1.5em;
 	text-align: center;
 }
 
@@ -181,7 +187,7 @@ label {
 	background: #505050;
 	background: linear-gradient(#808080, #505050);
 	width: 0;
-	height: 1.25em;
+	height: 1.2em;
 }
 
 .even	{

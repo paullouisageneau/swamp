@@ -167,6 +167,7 @@ def file(urlpath = ""):
 			if len(urlpath) > 0 and urlpath[-1] != '/':
 				return flask.redirect(app.config['BASE_PATH']+request.path+"/"+request.query_string.decode(), code=302)
 			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, writable), os.listdir(path)))
+			files = list(filter(lambda f: f.name[0] != '.', files))
 			if len(urlpath) == 0:
 				d = db.getDirectoriesForUser(flask.g.username)
 				directories = []
