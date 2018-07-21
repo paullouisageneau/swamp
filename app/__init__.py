@@ -44,14 +44,14 @@ db = database.Database(databaseFile)
 db.init()
 
 def url_for(*args, **kwargs):
-        return app.config['BASE_PATH'] + flask.url_for(*args, **kwargs)
+	return app.config['BASE_PATH'] + flask.url_for(*args, **kwargs)
 
 def url_quote(path):
-        return urllib.parse.quote(path)
+	return urllib.parse.quote(path)
 
-@app.context_processor
-def inject():
-        return dict(url_for=url_for, url_quote=url_quote)
+def allowed_file(name):
+	ext = os.path.splitext(name)[1][1:].lower()
+	return ext not in ['php', 'htm', 'html', 'js']
 
 def getDirectoryPath(username, urlpath):
 	urlpath = urlpath.split('?', 2)[0]
@@ -75,6 +75,10 @@ class FileInfo:
 		self.isvideo = self.ext in ['avi', 'mkv', 'mp4']
 		self.urlpath = urlpath
 		self.writable = writable
+
+@app.context_processor
+def inject():
+        return dict(url_for=url_for, url_quote=url_quote)
 
 def auth(f):
 	@wraps(f)
@@ -141,6 +145,8 @@ def file(urlpath = ""):
 		files = request.files
 		if 'file' in files and files['file'].filename != '':
 			f = request.files['file']
+			if not allowed_file(f.filename):
+				flask.abort(403)
 			filename = secure_filename(f.filename)
 			f.save(os.path.join(path, filename))
 		elif 'operation' in data and 'argument' in data:
@@ -167,7 +173,7 @@ def file(urlpath = ""):
 			if len(urlpath) > 0 and urlpath[-1] != '/':
 				return flask.redirect(app.config['BASE_PATH']+request.path+"/"+request.query_string.decode(), code=302)
 			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, writable), os.listdir(path)))
-			files = list(filter(lambda f: f.name[0] != '.', files))
+			files = list(filter(lambda f: f.name[0] != '.' and (f.isdir or allowed_file(f.name)), files))
 			if len(urlpath) == 0:
 				d = db.getDirectoriesForUser(flask.g.username)
 				directories = []
