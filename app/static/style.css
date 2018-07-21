@@ -63,6 +63,7 @@ input {
 	width: 15em;
 	height: 2.5em;
 	margin: 0.5em 0.25em;
+	padding: 0.25em 0.25em;
 }
 
 label {
