@@ -95,9 +95,9 @@ label {
 	text-align: center;
 }
 
-#container {
+#content {
 	width: 100%;
-	max-width: 60em;
+	/* max-width: 80em; */
 	margin-right: auto;
 	margin-left: auto;
 }
@@ -134,6 +134,7 @@ label {
 }
 
 #files td.actions {
+	width: 6em;
 	padding-left: 0.25em;
 	padding-right: 0.25em;
 }
