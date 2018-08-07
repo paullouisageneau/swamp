@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
   {{ super() }}
-  <h1>{{ path }}</h1>
+  <h1><a href=".."><img src="{{ url_for('static', filename='back.png') }}" alt="back"></a>{{ path }}</h1>
   {% if writable %}
   <div id="tools" class="box">
     <form id="uploadform" action="#" method="post" enctype="multipart/form-data">

@@ -24,6 +24,12 @@ h1 {
 	margin: 0.5em;
 }
 
+h1 img {
+	max-height: 32px;
+	vertical-align: middle;
+	margin-right: 0.5em;
+}
+
 table {
 	width: auto;
 	border: none;

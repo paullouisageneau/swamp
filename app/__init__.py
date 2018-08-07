@@ -183,7 +183,7 @@ def file(urlpath = ""):
 						directories.append(FileInfo(path, name, level >= 2))
 				files+= directories
 			files.sort(key=lambda fi: '0'+fi.name.lower() if fi.isdir else '1'+fi.name.lower())
-			return flask.render_template("directory.html", path=urlpath, files=files, writable=writable)
+			return flask.render_template("directory.html", path='/'+urlpath, files=files, writable=writable)
 		elif os.path.isfile(path):
 			if 'play' in request.args:
 				seconds = 0;
