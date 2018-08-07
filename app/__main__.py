@@ -24,7 +24,7 @@ import sys
 import os
 import getpass
 
-import gevent.wsgi
+from gevent.pywsgi import WSGIServer
 
 from . import app, db
 from . import database
@@ -95,7 +95,7 @@ def main():
 	else:
 		try:
 			print("Listening on http://127.0.0.1:{}/".format(port))
-			http_server = gevent.wsgi.WSGIServer(("127.0.0.1", port), app)
+			http_server = WSGIServer(("127.0.0.1", port), app)
 			http_server.serve_forever()
 		except KeyboardInterrupt:
 			return 0
