@@ -53,6 +53,7 @@ def command(a):
 			if not len(a):
 				print("Missing user name")
 				return 2
+			username = a.pop()
 			db.delUser(username)
 		else:
 			print("Unknown operation, expected 'add' or 'del'")
