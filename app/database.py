@@ -135,7 +135,7 @@ class Database:
 		if r is None:
 			raise Exception("User does not exist")
 		user_id = r[0]
-		c.execute("SELECT d.path, d.name, a.level FROM directory AS d LEFT JOIN access AS a ON a.directory_id = d.id AND a.user_id = ? LIMIT 1", (user_id,))
+		c.execute("SELECT d.path, d.name, a.level FROM directory AS d INNER JOIN access AS a ON a.directory_id = d.id AND a.user_id = ? LIMIT 1", (user_id,))
 		rows = c.fetchall()
 		d = {}
 		for r in rows:
@@ -154,7 +154,7 @@ class Database:
 		if len(s) == 0:
 			return None
 		directory = s[0]
-		c.execute("SELECT d.path, a.level FROM directory AS d LEFT JOIN access AS a ON a.directory_id = d.id AND a.user_id = ? WHERE d.name = ? LIMIT 1", (user_id, directory,))
+		c.execute("SELECT d.path, a.level FROM directory AS d INNER JOIN access AS a ON a.directory_id = d.id AND a.user_id = ? WHERE d.name = ? LIMIT 1", (user_id, directory,))
 		r = c.fetchone()
 		if r is None or r[1] <= 0:
 			return None
