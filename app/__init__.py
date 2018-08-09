@@ -13,7 +13,7 @@
 	WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU Affero General Public License for more details.
-																		
+
 	You should have received a copy of the GNU Affero General Public
 	License along with Swamp.
 	If not, see <http://www.gnu.org/licenses/>.
@@ -171,7 +171,8 @@ def file(urlpath = ""):
 	else: # GET
 		if os.path.isdir(path):
 			if len(urlpath) > 0 and urlpath[-1] != '/':
-				return flask.redirect(app.config['BASE_PATH']+request.path+"/"+request.query_string.decode(), code=302)
+				query = request.query_string.decode()
+				return flask.redirect(app.config['BASE_PATH']+request.path+"/"+("?"+query if query else ""), code=302)
 			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, writable), os.listdir(path)))
 			files = list(filter(lambda f: f.name[0] != '.' and (f.isdir or allowed_file(f.name)), files))
 			if len(urlpath) == 0:
