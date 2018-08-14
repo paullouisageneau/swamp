@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Directory{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  <div id="files" class="box">
+    <table>
+    {% for file in files %}
+      <tr class="{{ loop.cycle('odd', 'even') }}">
+        <td class="icon"><img src="{{ url_for('static', filename=('icons/directory.png' if file.isdir else 'icons/file.png')) }}"></td>
+        <td class="name"><a href="{{ url_quote(file.name) }}">{{ file.name }}</a></td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
+{% endblock %}

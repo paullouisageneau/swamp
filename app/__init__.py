@@ -97,18 +97,28 @@ def home():
 	else:
 		return flask.redirect(url_for('login'), code=307) # same method
 
-@app.route("/link/<identifier>", methods=['GET'])
-def link(identifier):
+@app.route("/link/<identifier>", defaults={'subpath': None})
+@app.route("/link/<identifier>/", defaults={'subpath': None})
+@app.route("/link/<identifier>/<path:subpath>", methods=['GET'])
+def link(identifier, subpath):
 	r = db.resolveLink(identifier)
 	if not r:
 		flask.abort(404)
 	username, urlpath = r
-	path, writable = getDirectoryPath(username, urlpath)
-	if not os.path.isfile(path):
-		flask.abort(404)
+	if subpath:
+		urlpath+= '/' + subpath
+	path, _ = getDirectoryPath(username, urlpath)
 	if 'display' in request.args:
 		link = app.config['PREFERRED_URL_SCHEME'] + '://' + request.host + url_for("link", identifier=identifier)
 		return flask.render_template("link.html", link=link, filename=os.path.basename(path))
+	if os.path.isdir(path):
+		if request.path[-1] != '/':
+			query = request.query_string.decode()
+			return flask.redirect(app.config['BASE_PATH']+request.path+'/'+('?'+query if query else ""), code=302)
+		files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, False), os.listdir(path)))
+		files = list(filter(lambda f: f.name[0] != '.' and (f.isdir or allowed_file(f.name)), files))
+		files.sort(key=lambda f: '0'+f.name.lower() if f.isdir else '1'+f.name.lower())
+		return flask.render_template("safe_directory.html", files=files)
 	return flask.send_file(path, as_attachment=True)
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -170,9 +180,14 @@ def file(urlpath = ""):
 		return flask.redirect(app.config['BASE_PATH']+request.path, code=302)
 	else: # GET
 		if os.path.isdir(path):
-			if len(urlpath) > 0 and urlpath[-1] != '/':
+			if request.path[-1] != '/':
 				query = request.query_string.decode()
 				return flask.redirect(app.config['BASE_PATH']+request.path+"/"+("?"+query if query else ""), code=302)
+			if 'link' in request.args:
+				if len(urlpath) == 0:
+					abort(400)
+				identifier = db.createLink(flask.g.username, urlpath)
+				return flask.redirect(url_for('link', identifier=identifier)+'?display', code=302)
 			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, writable), os.listdir(path)))
 			files = list(filter(lambda f: f.name[0] != '.' and (f.isdir or allowed_file(f.name)), files))
 			if len(urlpath) == 0:
@@ -183,7 +198,7 @@ def file(urlpath = ""):
 					if level >= 1:
 						directories.append(FileInfo(path, name, level >= 2))
 				files+= directories
-			files.sort(key=lambda fi: '0'+fi.name.lower() if fi.isdir else '1'+fi.name.lower())
+			files.sort(key=lambda f: '0'+f.name.lower() if f.isdir else '1'+f.name.lower())
 			return flask.render_template("directory.html", path='/'+urlpath, files=files, writable=writable)
 		elif os.path.isfile(path):
 			if 'play' in request.args:
