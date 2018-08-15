@@ -6,7 +6,7 @@
 {% block content %}
   {{ super() }}
   <div id="link" class="box">
-    <p>Link to <span class="filename">{{ filename }}</span>:</p>
+    <p>Public link to <span class="filename">{{ filename }}</span>, expires in 7 days:</p>
     <p><a href="{{ link }}">{{ link }}</a></p>
   </div>
 {% endblock %}

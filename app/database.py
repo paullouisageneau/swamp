@@ -23,6 +23,8 @@ import sqlite3
 import string
 import random
 import os
+import time
+import datetime
 from passlib.hash import sha512_crypt
 
 class Database:
@@ -42,7 +44,8 @@ class Database:
 		c.execute("CREATE TABLE IF NOT EXISTS link ("
 			"identifier TEXT UNQIUE NOT NULL,"
 			"user_id    INTEGER REFERENCES user(id) ON DELETE CASCADE ON UPDATE RESTRICT,"
-			"path       TEXT NOT NULL)")
+			"path       TEXT NOT NULL,"
+			"timestamp  INTEGER NOT NULL)")
 
 		c.execute("CREATE INDEX IF NOT EXISTS link_index ON link(user_id, path)")
 
@@ -164,16 +167,13 @@ class Database:
 		return resolvedPath, level
 
 	def createLink(self, username, path):
+		timestamp = int(time.time())
 		c = self._conn.cursor()
 		c.execute("SELECT id FROM user WHERE name = ? LIMIT 1", (username,))
 		r = c.fetchone()
 		if r is None:
 			raise Exception("User does not exist")
 		user_id = r[0]
-		c.execute("SELECT identifier FROM link WHERE user_id = ? AND path = ? LIMIT 1", (user_id, path,))
-		r = c.fetchone()
-		if r is not None:
-			return r[0]
 		while True:
 			length = 8
 			letters = string.ascii_lowercase + string.digits
@@ -181,14 +181,19 @@ class Database:
 			c.execute("SELECT 1 FROM link WHERE identifier = ? LIMIT 1", (identifier,))
 			if not c.fetchone():
 				break
-		c.execute("INSERT INTO link (identifier, user_id, path) VALUES (?, ?, ?)", (identifier, user_id, path,))
+		c.execute("INSERT INTO link (identifier, user_id, path, timestamp) VALUES (?, ?, ?, ?)", (identifier, user_id, path, timestamp))
 		self._conn.commit()
 		return identifier
 
 	def resolveLink(self, identifier):
 		c = self._conn.cursor()
-		c.execute("SELECT u.name, l.path FROM link AS l LEFT JOIN user AS u ON u.id = l.user_id WHERE identifier = ? LIMIT 1", (identifier,))
+		c.execute("SELECT u.name, l.path, l.timestamp FROM link AS l LEFT JOIN user AS u ON u.id = l.user_id WHERE identifier = ? LIMIT 1", (identifier,))
 		r = c.fetchone()
 		if r is None:
 			return None
+		link_time = datetime.datetime.fromtimestamp(r[2])
+		current_time = datetime.datetime.now()
+		seconds = (current_time - link_time).total_seconds()
+		if seconds > 7*24*60*60: # 7 days
+			return None # expired
 		return r[0], r[1]
