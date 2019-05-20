@@ -86,8 +86,16 @@ def auth(f):
 		if 'username' in flask.session:
 			flask.g.username = flask.session['username']
 			return f(*args, **kwargs)
-		else:
+		elif request.authorization:
+			auth = request.authorization
+			if db.authUser(auth.username, auth.password):
+				flask.g.username = auth.username
+				return f(*args, **kwargs)
+		elif request.accept_mimetypes.best_match(['application/octet-stream', 'text/html']) == 'text/html':
 			return flask.redirect(url_for('login', url=app.config['BASE_PATH']+request.full_path), code=302)
+
+		return flask.Response('Authentication required', 401, {'WWW-Authenticate': 'Basic realm="Swamp"'})
+
 	return decorated
 
 @app.route("/", methods=['GET'])
@@ -185,7 +193,7 @@ def file(urlpath = ""):
 				return flask.redirect(app.config['BASE_PATH']+request.path+"/"+("?"+query if query else ""), code=302)
 			if 'link' in request.args:
 				if len(urlpath) == 0:
-					abort(400)
+					flask.abort(400)
 				identifier = db.createLink(flask.g.username, urlpath)
 				return flask.redirect(url_for('link', identifier=identifier)+'?display', code=302)
 			files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, writable), os.listdir(path)))
@@ -201,7 +209,9 @@ def file(urlpath = ""):
 			files.sort(key=lambda f: '0'+f.name.lower() if f.isdir else '1'+f.name.lower())
 			return flask.render_template("directory.html", path='/'+urlpath, files=files, writable=writable)
 		elif os.path.isfile(path):
-			if 'play' in request.args:
+			if request.accept_mimetypes.best_match(['application/octet-stream', 'text/html']) != 'text/html':
+				return flask.make_response(flask.send_file(path))
+			elif 'play' in request.args:
 				seconds = 0;
 				if 'start' in request.args:
 					a = map(lambda s: int(s), request.args['start'].split(':', 3))
@@ -215,7 +225,7 @@ def file(urlpath = ""):
 				identifier = db.createLink(flask.g.username, urlpath)
 				return flask.redirect(url_for('link', identifier=identifier)+'?display', code=302)
 			else:
-				response = flask.make_response(flask.send_file(path));
+				response = flask.make_response(flask.send_file(path))
 				if 'download' in request.args:
 					response.headers['Content-Type'] = 'application/octet-stream'
 					response.headers['Content-Disposition'] = 'attachment; filename="'+os.path.basename(path)+'"';
