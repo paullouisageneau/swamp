@@ -166,8 +166,9 @@ label {
 	width: 100%;
 	height: auto;
 }
-#player .command {
-	margin: 0.25em;
+
+#player video {
+	cursor: pointer;
 }
 
 #timer {
@@ -183,11 +184,11 @@ label {
 	vertical-align: middle;
 }
 
-
 #player #progress {
 	border: 1px solid black;
 	border-left: none;
 	border-right: none;
+	cursor: pointer;
 }
 
 #player #progressbar {
@@ -196,6 +197,10 @@ label {
 	background: linear-gradient(#808080, #505050);
 	width: 0;
 	height: 1.2em;
+}
+
+#player #playbutton {
+   cursor: pointer;
 }
 
 .even	{
