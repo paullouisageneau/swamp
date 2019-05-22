@@ -72,9 +72,13 @@ def command(a):
 			path = a.pop()
 			if len(a):
 				username = a.pop()
-				access = 2
+				access = 1 # readonly
 				if len(a):
-					access = a.pop()
+					mode = a.pop();
+					if mode not in ['ro', 'rw']:
+						print("Access mode must be 'ro' or 'rw'")
+						return 2
+					access = 2 if mode == 'rw' else 1
 				db.addDirectoryForUser(path, username, access)
 			else:
 				db.addDirectory(path)
