@@ -125,10 +125,9 @@ def local(f):
         )
         if addr.is_loopback or addr.is_private or addr.is_link_local:
             return f(*args, **kwargs)
-        if CAST_ALLOWED_NETWORKS:
-            for net in CAST_ALLOWED_NETWORKS:
-                if ip_network(net).supernet_of(addr):
-                    return f(*args, **kwargs)
+        for net in app.config.get("CAST_ALLOWED_NETWORKS", []):
+            if addr in ip_network(net):
+                return f(*args, **kwargs)
         flask.abort(403)
 
     return decorated
