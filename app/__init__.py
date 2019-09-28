@@ -51,19 +51,18 @@ db.init()
 def url_base(urlpath):
     return app.config["BASE_PATH"] + urlpath
 
-
 def url_for(*args, **kwargs):
     return url_base(flask.url_for(*args, **kwargs))
 
+def url_absolute(relative_url):
+    return app.config["PREFERRED_URL_SCHEME"] + "://" + request.host + relative_url
 
 def url_quote(path):
     return urllib.parse.quote(path)
 
-
 def allowed_file(name):
     ext = os.path.splitext(name)[1][1:].lower()
     return ext not in ["php", "htm", "html", "js"]
-
 
 def getDirectoryPath(username, urlpath):
     urlpath = urlpath.split("?", 2)[0]
@@ -286,8 +285,7 @@ def resolve(identifier, subpath=None):
 def link(identifier, subpath):
     username, urlpath, path = resolve(identifier, subpath)
     if "display" in request.args:
-        link = app.config["PREFERRED_URL_SCHEME"] + "://" + request.host
-        link += url_for("link", identifier=identifier)
+        link = url_absolute(url_for("link", identifier=identifier))
         return flask.render_template("link.html", link=link, filename=os.path.basename(path))
     if os.path.isdir(path):
         if request.path[-1] != "/":
@@ -309,11 +307,16 @@ def link(identifier, subpath):
 @app.route("/stream/<identifier>/", methods=["GET"], defaults={"subpath": None})
 @app.route("/stream/<identifier>/<path:subpath>", methods=["GET"])
 def stream(identifier, subpath):
+    default_range = "bytes=0-"
+    if request.headers.get("Range", default_range) != default_range:
+        flask.abort(416) # Range not satisfiable
     username, urlpath, path = resolve(identifier, subpath)
     s = Streamer(path)
     if "info" in request.args:
         return flask.jsonify(s.getDescription())
-    f = s.getWebmStream(False, request.args["start"] if "start" in request.args else "")
+    is_hd = bool(request.args.get('hd', False))
+    start = request.args["start"] if "start" in request.args else None
+    f = s.getWebmStream(is_hd, start)
     return flask.Response(f, direct_passthrough=True, mimetype="video/webm")
 
 
@@ -331,8 +334,9 @@ def cast(identifier, subpath):
         return flask.jsonify({"devices": devices})
     cast.connect(request.args.get("name", None))
     if request.method == "POST":
-        query = "?start={}".format(request.args["start"]) if "start" in request.args else ""
-        cast.play(url_for("stream", identifier=identifier, urlpath=urlpath) + query, "video/webm")
+        query = "?hd=1" + ("&start={}".format(request.args["start"]) if "start" in request.args else "")
+        cast_url = url_absolute(url_for("stream", identifier=identifier, subpath=subpath) + query)
+        cast.play(cast_url, "video/webm")
     return flask.jsonify({})
 
 

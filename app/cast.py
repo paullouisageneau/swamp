@@ -41,20 +41,28 @@ class ChromeCast:
         return list(map(lambda c: c.device.friendly_name, pychromecast.get_chromecasts()))
 
     def connect(self, name=None):
+        self.disconnect()
         chromecasts = pychromecast.get_chromecasts()
         self.cast = next(
             (c for c in chromecasts if name is None or c.device.friendly_name == name), None
         )
         if self.cast is None:
-            raise Exception("Chromecast not found (name={})", name)
-        self.cast.connect()
+            raise Exception("Chromecast not found (name={})".format(name))
+        self.cast.wait()
+
+    def disconnect(self):
+        if self.cast:
+            self.cast.disconnect()
+            self.cast = None
 
     def play(self, url, mimetype):
         if self.cast is None:
             self.connect()
         self.stop()
-        self.cast.play_media(url, mimetype, stream_type="BUFFERED")
-        self.cast.media_controller.enable_subtitle(0)
+        mc = self.cast.media_controller
+        mc.play_media(url, mimetype, stream_type="BUFFERED")
+        mc.block_until_active()
+        #mc.enable_subtitle(0)
 
     def stop(self):
         if self.cast is not None and not self.cast.is_idle:

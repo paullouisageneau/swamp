@@ -35,19 +35,16 @@ class Streamer:
     def getDescription(self):
         args = [
             "ffprobe",
-            "-v",
-            "error",
-            "-show_entries",
-            "format=duration",
-            "-of",
-            "default=noprint_wrappers=1:nokey=1",
+            "-v", "error",
+            "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1",
             self.filename,
         ]
         out = subprocess.check_output(args, shell=False)
         duration = float(out)
         return {"duration": duration}
 
-    def getWebmStream(self, hd=False, start="", stop=""):
+    def getWebmStream(self, hd=False, start=None, stop=None):
         filters = []
         if hd:
             filters += [r"scale=-1:min(ih*1920/iw\,1080)"]
@@ -74,23 +71,17 @@ class Streamer:
         if len(filters):
             args += ["-vf", ",".join(filters)]
         args += [
-            "-v",
-            "error",
+            "-v", "error",
             "-copyts",
-            "-c:v",
-            "libvpx",
-            "-b:v",
-            "4M",
-            "-crf",
-            "16",
-            "-quality",
-            "realtime",
-            "-cpu-used",
-            "8",
-            "-c:a",
-            "libvorbis",
-            "-f",
-            "webm",
+            "-c:v", "libvpx",
+            "-b:v", "4M",
+            "-crf", "16",
+            "-quality", "realtime",
+            "-cpu-used", "8",
+            "-c:a", "libvorbis",
+            "-ac", "2",
+            "-ar", "44100",
+            "-f", "webm",
             "-",
         ]
 
