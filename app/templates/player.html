@@ -14,9 +14,7 @@
   <script>
   window.onload = function() {
     loadVideo("{{ videoLocation }}", {{ videoTime }});
-    {% if isLocal %}
-    requestCastLinks();
-    {% endif %}
+    requestCastLinks("{{ castLocation }}");
   }
   </script>
 {% endblock %}

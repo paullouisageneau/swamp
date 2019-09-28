@@ -19,19 +19,22 @@
 	If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import logging
-import sys
-import os
-import urllib.parse
+from gevent import monkey
+monkey.patch_all()
+
 import flask
 import urllib
+import urllib.parse
+import os
 
 from functools import wraps
 from flask import request, url_for
 from werkzeug.utils import secure_filename
+from ipaddress import ip_address, ip_network
 
-from . import database
-from . import streamer
+from .database import Database
+from .streamer import Streamer
+from .cast import Cast
 
 app = flask.Flask(__name__, static_url_path='/static')
 app.config.from_object('config')
@@ -40,7 +43,7 @@ app.secret_key = os.urandom(16)
 filesDirectory = os.path.join(app.root_path, 'files')
 databaseFile = os.path.join(app.root_path, 'database.db')
 
-db = database.Database(databaseFile)
+db = Database(databaseFile)
 db.init()
 
 def url_for(*args, **kwargs):
@@ -98,36 +101,25 @@ def auth(f):
 
 	return decorated
 
+def local(f):
+	@wraps(f)
+	def decorated(*args, **kwargs):
+		addr = ip_address(request.access_route[0] if len(request.access_route) > 0 else request.remote_addr)
+		if addr.is_loopback or addr.is_private or addr.is_link_local:
+			return f(*args, **kwargs)
+		if CAST_ALLOWED_NETWORKS:
+			for net in CAST_ALLOWED_NETWORKS:
+				if ip_network(net).supernet_of(addr):
+					return f(*args, **kwargs)
+		flask.abort(403)
+	return decorated
+
 @app.route("/", methods=['GET'])
 def home():
 	if 'username' in flask.session:
 		return flask.redirect(url_for('file'), code=307) # same method
 	else:
 		return flask.redirect(url_for('login'), code=307) # same method
-
-@app.route("/link/<identifier>", defaults={'subpath': None})
-@app.route("/link/<identifier>/", defaults={'subpath': None})
-@app.route("/link/<identifier>/<path:subpath>", methods=['GET'])
-def link(identifier, subpath):
-	r = db.resolveLink(identifier)
-	if not r:
-		flask.abort(404)
-	username, urlpath = r
-	if subpath:
-		urlpath+= '/' + subpath
-	path, _ = getDirectoryPath(username, urlpath)
-	if 'display' in request.args:
-		link = app.config['PREFERRED_URL_SCHEME'] + '://' + request.host + url_for("link", identifier=identifier)
-		return flask.render_template("link.html", link=link, filename=os.path.basename(path))
-	if os.path.isdir(path):
-		if request.path[-1] != '/':
-			query = request.query_string.decode()
-			return flask.redirect(app.config['BASE_PATH']+request.path+'/'+('?'+query if query else ""), code=302)
-		files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, False), os.listdir(path)))
-		files = list(filter(lambda f: f.name[0] != '.' and (f.isdir or allowed_file(f.name)), files))
-		files.sort(key=lambda f: '0'+f.name.lower() if f.isdir else '1'+f.name.lower())
-		return flask.render_template("safe_directory.html", files=files)
-	return flask.send_file(path, as_attachment=True)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -212,6 +204,7 @@ def file(urlpath = ""):
 			if request.accept_mimetypes.best_match(['application/octet-stream', 'text/html']) != 'text/html':
 				return flask.make_response(flask.send_file(path))
 			elif 'play' in request.args:
+				identifier = db.createLink(flask.g.username, urlpath)
 				seconds = 0;
 				if 'start' in request.args:
 					a = map(lambda s: int(s), request.args['start'].split(':', 3))
@@ -219,7 +212,8 @@ def file(urlpath = ""):
 				return flask.render_template("player.html",
 					title = os.path.basename(path),
 					downloadLocation = app.config['BASE_PATH']+request.path+'?download',
-					videoLocation = url_for("stream", urlpath=urlpath),
+					videoLocation = url_for("stream", identifier=identifier),
+					castLocation = url_for("cast", identifier=identifier),
 					videoTime = seconds)
 			elif 'link' in request.args:
 				identifier = db.createLink(flask.g.username, urlpath)
@@ -233,15 +227,59 @@ def file(urlpath = ""):
 		else:
 			flask.abort(404)
 
-@app.route("/stream/<path:urlpath>", methods=['GET'])
-@auth
-def stream(urlpath):
-	path, writable = getDirectoryPath(flask.g.username, urlpath)
-	s = streamer.Streamer(path)
-	if 'playinfo' in request.args:
-		return flask.jsonify(s.getDescription())
-	if 'castinfo' in request.args:
+def resolve(identifier, subpath=None):
+	r = db.resolveLink(identifier)
+	if not r:
 		flask.abort(404)
+	username, urlpath = r
+	if subpath:
+		urlpath+= '/' + subpath
+	path, _ = getDirectoryPath(username, urlpath)
+	return username, urlpath, path
+
+@app.route("/link/<identifier>", methods=['GET'], defaults={'subpath': None})
+@app.route("/link/<identifier>/", methods=['GET'], defaults={'subpath': None})
+@app.route("/link/<identifier>/<path:subpath>", methods=['GET'])
+def link(identifier, subpath):
+	username, urlpath, path = resolve(identifier, subpath)
+	if 'display' in request.args:
+		link = app.config['PREFERRED_URL_SCHEME'] + '://' + request.host + url_for("link", identifier=identifier)
+		return flask.render_template("link.html", link=link, filename=os.path.basename(path))
+	if os.path.isdir(path):
+		if request.path[-1] != '/':
+			query = request.query_string.decode()
+			return flask.redirect(app.config['BASE_PATH']+request.path+'/'+('?'+query if query else ""), code=302)
+		files = list(map(lambda f: FileInfo(os.path.join(path, f), urlpath+f, False), os.listdir(path)))
+		files = list(filter(lambda f: f.name[0] != '.' and (f.isdir or allowed_file(f.name)), files))
+		files.sort(key=lambda f: '0'+f.name.lower() if f.isdir else '1'+f.name.lower())
+		return flask.render_template("safe_directory.html", files=files)
+	return flask.send_file(path, as_attachment=True)
+
+@app.route("/stream/<identifier>/", methods=['GET'], defaults={'subpath': None})
+@app.route("/stream/<identifier>/<path:subpath>", methods=['GET'])
+def stream(identifier, subpath):
+	username, urlpath, path = resolve(identifier, subpath)
+	s = Streamer(path)
+	if 'info' in request.args:
+		return flask.jsonify(s.getDescription())
 	f = s.getWebmStream(False, request.args['start'] if 'start' in request.args else '')
 	return flask.Response(f, direct_passthrough=True, mimetype='video/webm')
+
+@app.route("/cast/<identifier>/", methods=['GET', 'POST'], defaults={'subpath': None})
+@app.route("/cast/<identifier>/<path:subpath>", methods=['GET', 'POST'])
+@local
+def cast(identifier, subpath):
+	cast = Cast()
+	if cast is None:
+		flask.abort(503) # Service unavailable
+	username, urlpath, path = resolve(identifier, subpath)
+	if 'list' in request.args:
+		cast = Cast()
+		devices = cast.list() if cast is not None else []
+		return flask.jsonify({'devices': devices})
+	cast.connect(request.args.get('name', None))
+	if request.method == 'POST':
+		query = '?start={}'.format(request.args['start']) if 'start' in request.args else ''
+		cast.play(url_for("stream", identifier=identifier, urlpath=urlpath) + query, 'video/webm')
+	return flask.jsonify({})
 

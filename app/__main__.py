@@ -19,15 +19,11 @@
 	If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from gevent import monkey
-monkey.patch_all()
-
-from gevent.pywsgi import WSGIServer
-
-import logging
 import sys
 import os
 import getpass
+
+from gevent.pywsgi import WSGIServer
 
 from . import app, db
 from . import database

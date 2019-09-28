@@ -26,6 +26,7 @@ var progressbar = document.getElementById('progressbar');
 var playbutton = document.getElementById('playbutton');
 var videoUrl = "";
 var videoTime = 0;
+var castUrl = "";
 var videoHeight = -1;
 var videoBaseTime = 0;
 var videoDuration = -1;
@@ -110,7 +111,7 @@ function loadVideo(url, time) {
 
 	if(videoDuration < 0) {
 		var request = new XMLHttpRequest();
-		request.open('GET', videoUrl+"?playinfo", true);
+		request.open('GET', videoUrl+"?info", true);
 		request.onload = function() {
 			if (this.status >= 200 && this.status < 400) {
 			var data = JSON.parse(this.response);
@@ -137,7 +138,7 @@ function scalePlayer() {
 function toggleFullscreen() {
 	var element = video;
 	if (!document.fullscreenElement &&
-      !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {  
+      !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {
 		if (element.requestFullscreen) {
 			element.requestFullscreen();
 		} else if (element.msRequestFullscreen) {
@@ -160,17 +161,19 @@ function toggleFullscreen() {
 	}
 }
 
-function requestCastLinks() {
+function requestCastLinks(url) {
+	castUrl = url;
 	var request = new XMLHttpRequest();
-	request.open('GET', videoUrl+"?castinfo", true);
+	request.open('GET', castUrl+"?list", true);
 	request.onload = function() {
 		if (this.status >= 200 && this.status < 400) {
 			var data = JSON.parse(this.response);
+			var devices = data.devices;
 			castlinks.innerHTML = "";
-			if(data.devices.length > 0) {
+			if(devices && devices.length > 0) {
 				castlinks.innerHTML+= " - Cast:&nbsp;";
-				for (var i = 0; i < data.devices.length; i++) {
-					castlinks.innerHTML+= "<a href=\"#\" onclick=\"requestCast('"+data.devices[i]+"');return false;\">"+data.devices[i]+"</a>&nbsp;";
+				for (var i = 0; i < devices.length; i++) {
+					castlinks.innerHTML+= "<a href=\"#\" onclick=\"requestCast('"+devices[i]+"');return false;\">"+devices[i]+"</a>&nbsp;";
 				}
 			}
 		};
@@ -181,7 +184,7 @@ function requestCastLinks() {
 function requestCast(device) {
 	video.pause();
 	var request = new XMLHttpRequest();
-	request.open('GET', videoUrl+"?cast"+(device ? "="+device : "")+"&hd&start="+formatTime(videoTime), true);
+	request.open('POST', castUrl+"?name="+(device || "")+"&start="+formatTime(videoTime), true);
 	request.onload = function() {
 		// TODO
 	};
