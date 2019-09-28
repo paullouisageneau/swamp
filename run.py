@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from app.__main__ import main
+import app
 import sys
 
-sys.exit(main())
+sys.exit(app.main())

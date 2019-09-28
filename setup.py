@@ -18,15 +18,8 @@ setup(
     packages=["swamp"],
     include_package_data=True,
     zip_safe=False,
-    entry_points={
-        "console_scripts": ["swamp=app.__main__:main"]
-    },
-
-    install_requires=[
-        "flask >= 0.12.1",
-        "gevent >= 1.2.1"
-    ],
-
+    entry_points={"console_scripts": ["swamp=app.__main__:main"]},
+    install_requires=["flask >= 0.12.1", "gevent >= 1.2.1"],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Web Environment",
@@ -35,5 +28,5 @@ setup(
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3",
-    ]
+    ],
 )
