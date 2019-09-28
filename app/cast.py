@@ -62,7 +62,7 @@ class ChromeCast:
         mc = self.cast.media_controller
         mc.play_media(url, mimetype, stream_type="BUFFERED")
         mc.block_until_active()
-        #mc.enable_subtitle(0)
+        # mc.enable_subtitle(0)
 
     def stop(self):
         if self.cast is not None and not self.cast.is_idle:

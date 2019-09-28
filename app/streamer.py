@@ -27,12 +27,13 @@ directory = "/home/public"
 
 
 class Streamer:
-    def __init__(self, filename):
+    def __init__(self, filename, stream_format="webm"):
         self.filename = filename
+        self.stream_format = stream_format
         if not os.path.isfile(filename):
             raise Exception("File does not exist: " + filename)
 
-    def getDescription(self):
+    def get_description(self):
         args = [
             "ffprobe",
             "-v", "error",
@@ -44,7 +45,7 @@ class Streamer:
         duration = float(out)
         return {"duration": duration}
 
-    def getWebmStream(self, hd=False, start=None, stop=None):
+    def get_stream(self, hd=False, start=None, stop=None):
         filters = []
         if hd:
             filters += [r"scale=-1:min(ih*1920/iw\,1080)"]
@@ -70,20 +71,40 @@ class Streamer:
             args += ["-to", stop]
         if len(filters):
             args += ["-vf", ",".join(filters)]
+
+        if self.stream_format == "webm":
+            args += [
+                "-c:v", "libvpx",
+                "-b:v", "4M",
+                "-crf", "16",
+                "-quality", "realtime",
+                "-cpu-used", "8",
+                "-c:a", "libvorbis",
+                "-f", "webm",
+            ]
+        else:  # matroska
+            args += [
+                "-c:v", "libx264",
+                "-b:v", "4M",
+                "-crf", "26",
+                "-preset", "veryfast",
+                "-tune", "zerolatency",
+                "-movflags", "+faststart",
+                "-c:a", "aac",
+                "-f", "matroska",
+            ]
+
         args += [
-            "-v", "error",
-            "-copyts",
-            "-c:v", "libvpx",
-            "-b:v", "4M",
-            "-crf", "16",
-            "-quality", "realtime",
-            "-cpu-used", "8",
-            "-c:a", "libvorbis",
             "-ac", "2",
             "-ar", "44100",
-            "-f", "webm",
+            "-copyts",
+            "-v", "error",
             "-",
         ]
 
         proc = subprocess.Popen(args, stdin=None, stdout=subprocess.PIPE, shell=False)
         return proc.stdout
+
+    @property
+    def mimetype(self):
+        return "video/{}".format("webm" if self.stream_format == "webm" else "x-matroska")

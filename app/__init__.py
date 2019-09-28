@@ -51,20 +51,25 @@ db.init()
 def url_base(urlpath):
     return app.config["BASE_PATH"] + urlpath
 
+
 def url_for(*args, **kwargs):
     return url_base(flask.url_for(*args, **kwargs))
+
 
 def url_absolute(relative_url):
     return app.config["PREFERRED_URL_SCHEME"] + "://" + request.host + relative_url
 
+
 def url_quote(path):
     return urllib.parse.quote(path)
+
 
 def allowed_file(name):
     ext = os.path.splitext(name)[1][1:].lower()
     return ext not in ["php", "htm", "html", "js"]
 
-def getDirectoryPath(username, urlpath):
+
+def get_directory_path(username, urlpath):
     urlpath = urlpath.split("?", 2)[0]
     r = db.resolveDirectory(username, urlpath)
     if r:
@@ -160,7 +165,7 @@ def login():
 @app.route("/file/<path:urlpath>", methods=["GET", "POST"])
 @auth
 def file(urlpath=""):
-    path, writable = getDirectoryPath(flask.g.username, urlpath)
+    path, writable = get_directory_path(flask.g.username, urlpath)
     if request.method == "POST":
         if not writable:
             flask.abort(403)
@@ -183,7 +188,7 @@ def file(urlpath=""):
             operation = data["operation"]
             argument = data["argument"]
             suburlpath = urlpath + argument
-            subpath, subwritable = getDirectoryPath(flask.g.username, suburlpath)
+            subpath, subwritable = get_directory_path(flask.g.username, suburlpath)
             if not subwritable:
                 flask.abort(403)
             if operation == "delete":
@@ -275,7 +280,7 @@ def resolve(identifier, subpath=None):
     username, urlpath = r
     if subpath:
         urlpath += "/" + subpath
-    path, _ = getDirectoryPath(username, urlpath)
+    path, _ = get_directory_path(username, urlpath)
     return username, urlpath, path
 
 
@@ -309,15 +314,16 @@ def link(identifier, subpath):
 def stream(identifier, subpath):
     default_range = "bytes=0-"
     if request.headers.get("Range", default_range) != default_range:
-        flask.abort(416) # Range not satisfiable
+        flask.abort(416)  # Range not satisfiable
     username, urlpath, path = resolve(identifier, subpath)
-    s = Streamer(path)
+    stream_format = request.args.get('format', 'webm')
+    s = Streamer(path, stream_format)
     if "info" in request.args:
-        return flask.jsonify(s.getDescription())
+        return flask.jsonify(s.get_description())
     is_hd = bool(request.args.get('hd', False))
     start = request.args["start"] if "start" in request.args else None
-    f = s.getWebmStream(is_hd, start)
-    return flask.Response(f, direct_passthrough=True, mimetype="video/webm")
+    f = s.get_stream(is_hd, start)
+    return flask.Response(f, direct_passthrough=True, mimetype=s.mimetype)
 
 
 @app.route("/cast/<identifier>/", methods=["GET", "POST"], defaults={"subpath": None})
@@ -334,9 +340,11 @@ def cast(identifier, subpath):
         return flask.jsonify({"devices": devices})
     cast.connect(request.args.get("name", None))
     if request.method == "POST":
-        query = "?hd=1" + ("&start={}".format(request.args["start"]) if "start" in request.args else "")
+        query = "?format=matroska&hd=1"
+        if "start" in request.args:
+            query += "&start={}".format(request.args["start"])
         cast_url = url_absolute(url_for("stream", identifier=identifier, subpath=subpath) + query)
-        cast.play(cast_url, "video/webm")
+        cast.play(cast_url, "video/x-matroska")
     return flask.jsonify({})
 
 
