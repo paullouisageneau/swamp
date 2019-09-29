@@ -45,9 +45,9 @@ class Streamer:
         duration = float(out)
         return {"duration": duration}
 
-    def get_stream(self, hd=False, start=None, stop=None):
+    def get_stream(self, is_hd=False, start=None, stop=None):
         filters = []
-        if hd:
+        if is_hd:
             filters += [r"scale=-1:min(ih*1920/iw\,1080)"]
             filters += [r"pad=1920:1080:(1920-iw)/2:(1080-ih)/2:black"]
 
@@ -75,7 +75,7 @@ class Streamer:
         if self.stream_format == "webm":
             args += [
                 "-c:v", "libvpx",
-                "-b:v", "4M",
+                "-b:v", "8M" if is_hd else "4M",
                 "-crf", "16",
                 "-quality", "realtime",
                 "-cpu-used", "8",
@@ -85,7 +85,7 @@ class Streamer:
         else:  # matroska
             args += [
                 "-c:v", "libx264",
-                "-b:v", "4M",
+                "-b:v", "8M" if is_hd else "4M",
                 "-crf", "26",
                 "-preset", "veryfast",
                 "-tune", "zerolatency",
@@ -96,7 +96,7 @@ class Streamer:
 
         args += [
             "-ac", "2",
-            "-ar", "44100",
+            "-ar", "48000",
             "-copyts",
             "-v", "error",
             "-",
