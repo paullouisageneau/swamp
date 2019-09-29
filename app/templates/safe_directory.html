@@ -10,7 +10,8 @@
     {% for file in files %}
       <tr class="{{ loop.cycle('odd', 'even') }}">
         <td class="icon"><img src="{{ url_for('static', filename=('icons/directory.png' if file.isdir else 'icons/file.png')) }}"></td>
-        <td class="name"><a href="{{ url_quote(file.name) }}">{{ file.name }}</a></td>
+        <td class="name"><a href="{{ url_quote(file.name) + ('?play' if file.isvideo else '') }}">{{ file.name }}</a></td>
+        <td class="actions"><a href="{{ url_quote(file.name) + '?download' }}"><img src="{{ url_for('static', filename='icons/download.png') }}"></a>
       </tr>
     {% endfor %}
     </table>

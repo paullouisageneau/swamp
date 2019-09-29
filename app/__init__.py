@@ -239,9 +239,11 @@ def file(urlpath=""):
                 "directory.html", path="/" + urlpath, files=files, writable=writable
             )
         elif os.path.isfile(path):
+            if "download" in request.args:
+                return flask.send_file(path, as_attachment=True)
             mimetypes = ["application/octet-stream", "text/html"]
             if request.accept_mimetypes.best_match(mimetypes) != "text/html":
-                return flask.make_response(flask.send_file(path))
+                return flask.send_file(path)
             elif "play" in request.args:
                 identifier = db.createLink(flask.g.username, urlpath)
                 seconds = 0
@@ -262,13 +264,7 @@ def file(urlpath=""):
                     url_for("link", identifier=identifier) + "?display", code=302
                 )
             else:
-                response = flask.make_response(flask.send_file(path))
-                if "download" in request.args:
-                    response.headers["Content-Type"] = "application/octet-stream"
-                    response.headers["Content-Disposition"] = (
-                        'attachment; filename="' + os.path.basename(path) + '"'
-                    )
-                return response
+                return flask.send_file(path, as_attachment=True)
         else:
             flask.abort(404)
 
@@ -306,7 +302,28 @@ def link(identifier, subpath):
         )
         files.sort(key=lambda f: "0" + f.name.lower() if f.isdir else "1" + f.name.lower())
         return flask.render_template("safe_directory.html", files=files)
-    return flask.send_file(path, as_attachment=True)
+    elif os.path.isfile(path):
+        if "download" in request.args:
+            return flask.send_file(path, as_attachment=True)
+        mimetypes = ["application/octet-stream", "text/html"]
+        if request.accept_mimetypes.best_match(mimetypes) != "text/html":
+            return flask.send_file(path)
+        elif "play" in request.args:
+            seconds = 0
+            if "start" in request.args:
+                a = map(lambda s: int(s), request.args["start"].split(":", 3))
+                seconds = reduce(lambda s, n: s * 60 + n, a)
+            return flask.render_template(
+                "player.html",
+                title=os.path.basename(path),
+                downloadLocation=url_base(request.path) + "?download",
+                videoLocation=url_for("stream", identifier=identifier, subpath=subpath),
+                videoTime=seconds,
+            )
+        else:
+            return flask.send_file(path, as_attachment=True)
+    else:
+        flask.abort(404)
 
 
 @app.route("/stream/<identifier>/", methods=["GET"], defaults={"subpath": None})
