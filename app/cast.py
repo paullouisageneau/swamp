@@ -42,7 +42,7 @@ class ChromeCast:
     def list(self):
         return list(map(lambda c: {
             "name": c.device.friendly_name,
-            "host": c.device.host
+            "host": c.host
         },
             pychromecast.get_chromecasts()))
 
