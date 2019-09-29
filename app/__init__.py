@@ -338,11 +338,13 @@ def cast(identifier, subpath):
         cast = Cast()
         devices = cast.list() if cast is not None else []
         return flask.jsonify({"devices": devices})
-    cast.connect(request.args.get("name", None))
+    cast.connect(request.args.get("host", None))
     if request.method == "POST":
         query = "?format=matroska&hd=1"
         if "start" in request.args:
             query += "&start={}".format(request.args["start"])
+        if "audio" in request.args:
+            query += "&audio={}".format(request.args["audio"])
         cast_url = url_absolute(url_for("stream", identifier=identifier, subpath=subpath) + query)
         cast.play(cast_url, "video/x-matroska")
     return flask.jsonify({})

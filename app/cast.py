@@ -28,6 +28,8 @@ except ImportError:
     print("Missing pychromecast package, disabling Chromecast support")
     ENABLE_CHROMECAST = False
 
+CHROMECAST_TIMEOUT = 30
+
 
 def Cast():
     return ChromeCast() if ENABLE_CHROMECAST else None
@@ -38,9 +40,21 @@ class ChromeCast:
         self.cast = None
 
     def list(self):
-        return list(map(lambda c: c.device.friendly_name, pychromecast.get_chromecasts()))
+        return list(map(lambda c: {
+            "name": c.device.friendly_name,
+            "host": c.device.host
+        },
+            pychromecast.get_chromecasts()))
 
-    def connect(self, name=None):
+    def connect(self, host=None):
+        if host is None:
+            self.connect_by_name()
+            return
+        self.disconnect()
+        self.cast = pychromecast.Chromecast(host)
+        self.cast.wait(CHROMECAST_TIMEOUT)
+
+    def connect_by_name(self, name=None):
         self.disconnect()
         chromecasts = pychromecast.get_chromecasts()
         self.cast = next(
@@ -48,7 +62,7 @@ class ChromeCast:
         )
         if self.cast is None:
             raise Exception("Chromecast not found (name={})".format(name))
-        self.cast.wait()
+        self.cast.wait(CHROMECAST_TIMEOUT)
 
     def disconnect(self):
         if self.cast:
@@ -61,8 +75,7 @@ class ChromeCast:
         self.stop()
         mc = self.cast.media_controller
         mc.play_media(url, mimetype, stream_type="BUFFERED")
-        mc.block_until_active()
-        # mc.enable_subtitle(0)
+        mc.block_until_active(CHROMECAST_TIMEOUT)
 
     def stop(self):
         if self.cast is not None and not self.cast.is_idle:

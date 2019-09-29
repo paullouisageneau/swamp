@@ -105,7 +105,7 @@ function loadVideo(url, time) {
 	videoBaseTime = videoTime = time;
 	updateTimer();
 
-	videoSource.setAttribute('src', videoUrl+"?play&audio="+audioStream+"&start="+formatTime(videoTime));
+	videoSource.setAttribute('src', videoUrl+"?audio="+audioStream+"&start="+formatTime(videoTime));
 	video.load();
 	video.play();
 
@@ -173,7 +173,7 @@ function requestCastLinks(url) {
 			if(devices && devices.length > 0) {
 				castlinks.innerHTML+= " - Cast:&nbsp;";
 				for (var i = 0; i < devices.length; i++) {
-					castlinks.innerHTML+= "<a href=\"#\" onclick=\"requestCast('"+devices[i]+"');return false;\">"+devices[i]+"</a>&nbsp;";
+					castlinks.innerHTML+= "<a href=\"#\" onclick=\"requestCast('"+devices[i].host+"');return false;\">"+devices[i].name+"</a>&nbsp;";
 				}
 			}
 		};
@@ -181,10 +181,11 @@ function requestCastLinks(url) {
 	request.send();
 }
 
-function requestCast(device) {
+function requestCast(host) {
 	video.pause();
 	var request = new XMLHttpRequest();
-	request.open('POST', castUrl+"?name="+(device || "")+"&start="+formatTime(videoTime), true);
+	var url = castUrl+"?host="+(host || "")+"&audio="+audioStream+"&start="+formatTime(videoTime);
+	request.open('POST', url, true);
 	request.onload = function() {
 		// TODO
 	};
