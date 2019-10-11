@@ -45,7 +45,7 @@ class Streamer:
         duration = float(out)
         return {"duration": duration}
 
-    def get_stream(self, is_hd=False, start=None, stop=None):
+    def get_stream(self, is_hd=False, start=None, stop=None, force_subtitles=False):
         filters = []
         if is_hd:
             filters += [r"scale=-1:min(ih*1920/iw\,1080)"]
@@ -55,7 +55,7 @@ class Streamer:
             srt = os.path.splitext(self.filename)[0] + ".srt"
             if os.path.isfile(srt):
                 filters += ["subtitles=" + srt + ":charenc=CP1252"]
-            elif (
+            elif force_subtitles and (
                 "codec_type=subtitle"
                 in subprocess.check_output(
                     ["ffprobe", "-v", "error", "-show_streams", self.filename]
