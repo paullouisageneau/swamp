@@ -54,7 +54,7 @@ class Streamer:
         if re.match("^[^\"'\\[\\]]+$", self.filename):
             srt = os.path.splitext(self.filename)[0] + ".srt"
             if os.path.isfile(srt):
-                filters += ["subtitles=" + srt + ":charenc=CP1252"]
+                filters += ["subtitles=" + srt]
             elif force_subtitles and (
                 "codec_type=subtitle"
                 in subprocess.check_output(
