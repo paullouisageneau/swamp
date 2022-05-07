@@ -339,7 +339,7 @@ def stream(identifier, subpath):
         return flask.jsonify(s.get_description())
     is_hd = bool(request.args.get('hd', False))
     start = request.args["start"] if "start" in request.args else None
-    f = s.get_stream(is_hd, start)
+    f = s.get_stream(is_hd, start=start, stop=None, force_subtitles=True)
     return flask.Response(f, direct_passthrough=True, mimetype=s.mimetype)
 
 

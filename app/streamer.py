@@ -52,9 +52,16 @@ class Streamer:
             filters += [r"pad=1920:1080:(1920-iw)/2:(1080-ih)/2:black"]
 
         if re.match("^[^\"'\\[\\]]+$", self.filename):
-            srt = os.path.splitext(self.filename)[0] + ".srt"
+            base = os.path.splitext(self.filename)[0]
+            srt = base + ".srt"
+            srt_fr = os.path.splitext(self.filename)[0] + ".fr.srt"
+            srt_en = os.path.splitext(self.filename)[0] + ".en.srt"
             if os.path.isfile(srt):
                 filters += ["subtitles=" + srt]
+            elif os.path.isfile(srt_fr):
+                filters += ["subtitles=" + srt_fr + ":charenc=ISO-8859-15"]
+            elif os.path.isfile(srt_en):
+                filters += ["subtitles=" + srt_en + ":charenc=ISO-8859-1"]
             elif force_subtitles and (
                 "codec_type=subtitle"
                 in subprocess.check_output(
@@ -75,7 +82,7 @@ class Streamer:
         if self.stream_format == "webm":
             args += [
                 "-c:v", "libvpx",
-                "-b:v", "8M" if is_hd else "4M",
+                "-b:v", "8M" if is_hd else "3M",
                 "-crf", "16",
                 "-quality", "realtime",
                 "-cpu-used", "8",
@@ -85,7 +92,7 @@ class Streamer:
         else:  # matroska
             args += [
                 "-c:v", "libx264",
-                "-b:v", "8M" if is_hd else "4M",
+                "-b:v", "8M" if is_hd else "3M",
                 "-crf", "26",
                 "-preset", "veryfast",
                 "-tune", "zerolatency",
