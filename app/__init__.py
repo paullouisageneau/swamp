@@ -366,6 +366,3 @@ def cast(identifier, subpath):
         cast.play(cast_url, "video/x-matroska")
     return flask.jsonify({})
 
-
-# Import main to expose it outside
-from .__main__ import main
